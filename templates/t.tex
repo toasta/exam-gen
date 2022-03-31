@@ -3,6 +3,7 @@
 \usepackage{graphicx}
 \usepackage{enumitem}
 \usepackage{amsfonts}
+\usepackage{tabularx}
 %\DeclareGraphicsExtensions{.png}
 
 \begin{document}
@@ -14,15 +15,27 @@
 {% for i in ret %}
 
 \subsection{ {{ i['q'] }} }
-\begin{minipage}[c]{.2\textwidth} {{ i['qr'] }} \end{minipage}
-\begin{minipage}[l]{.7\textwidth}
-\begin{checkboxes}
-{% for j in i.a %}
-\item {{j}}
-{% endfor %}
-\end{checkboxes}
-\end{minipage}
-\begin{minipage}[c]{.2\textwidth} {{ i['qr'] }} \end{minipage}
 
+\begin{tabularx}{\textwidth}{ l l r }
+
+\multicolumn{1}{l} { 
+{{ i['qr'] }}
+}
+
+&
+\multicolumn{1}{b{12cm}} { 
+    \begin{checkboxes}
+    {% for j in i.a %}
+        \item {{ j }}
+    {%- endfor %}
+    \end{checkboxes}
+}
+
+
+&
+{{ i['qr'] }} 
+
+\\
+\end{tabularx}
 {% endfor %}
 \end{document}

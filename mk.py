@@ -95,7 +95,7 @@ for i in random.sample(q, len(q)):
         ]
         #'-l', 'L',
     subprocess.run(cmd, input=a).stdout
-    o['qr'] = r'\includegraphics[width=3cm]{' + of + '}'
+    o['qr'] = r'\includegraphics[width=2cm]{' + of + '}'
     ret.append(o)
 
 
