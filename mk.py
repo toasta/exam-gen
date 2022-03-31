@@ -58,7 +58,9 @@ def get_iv(b):
     return h
 
 
+qco = 0
 for i in random.sample(q, len(q)):
+    qco += 1
     q = i['q']
     init=grh(16)
     key=get_key(init)
@@ -71,6 +73,7 @@ for i in random.sample(q, len(q)):
     o = {}
     o['q'] = q
     o['a'] = []
+    o['qco'] = qco
     answers = random.sample(i['a'], len(i['a']))
     cor=[]
     cor=0

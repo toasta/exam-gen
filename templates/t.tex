@@ -16,26 +16,20 @@
 
 \subsection{ {{ i['q'] }} }
 
-\begin{tabularx}{\textwidth}{ l l r }
-
-\multicolumn{1}{l} { 
-{{ i['qr'] }}
-}
-
-&
-\multicolumn{1}{b{12cm}} { 
+\newlength{\mylen{{i['qco']}}}
+\settoheight{\mylen{{i['qco']}}}{
     \begin{checkboxes}
     {% for j in i.a %}
         \item {{ j }}
     {%- endfor %}
     \end{checkboxes}
-}
+    }
+{{ i['qr'] }}
+    \begin{checkboxes}
+    {% for j in i.a %}
+        \item {{ j }}
+    {%- endfor %}
+    \end{checkboxes}
 
-
-&
-{{ i['qr'] }} 
-
-\\
-\end{tabularx}
 {% endfor %}
 \end{document}
