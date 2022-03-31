@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{a4wide}
+\usepackage{graphicx}
+\usepackage{enumitem}
+\usepackage{amsfonts}
+%\DeclareGraphicsExtensions{.png}
+
+\begin{document}
+\newlist{checkboxes}{itemize}{2}
+\setlist[checkboxes]{label=$\square$}
+
+\section{General}
+\section{Fragen}
+{% for i in ret %}
+
+\subsection{ {{ i['q'] }} }
+\begin{minipage}[c]{.2\textwidth} {{ i['qr'] }} \end{minipage}
+\begin{minipage}[l]{.7\textwidth}
+\begin{checkboxes}
+{% for j in i.a %}
+\item {{j}}
+{% endfor %}
+\end{checkboxes}
+\end{minipage}
+\begin{minipage}[c]{.2\textwidth} {{ i['qr'] }} \end{minipage}
+
+{% endfor %}
+\end{document}
