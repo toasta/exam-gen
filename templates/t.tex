@@ -9,27 +9,48 @@
 \begin{document}
 \newlist{checkboxes}{itemize}{2}
 \setlist[checkboxes]{label=$\square$}
+{% for i in qlatex %}
+    {{ i.question }}
 
-\section{General}
-\section{Fragen}
-{% for i in ret %}
-
-\subsection{ {{ i['q'] }} }
-
-\newlength{\mylen{{i['qco']}}}
-\settoheight{\mylen{{i['qco']}}}{
     \begin{checkboxes}
-    {% for j in i.a %}
+    {% for j in i.answers %}
         \item {{ j }}
     {%- endfor %}
     \end{checkboxes}
-    }
-{{ i['qr'] }}
-    \begin{checkboxes}
-    {% for j in i.a %}
-        \item {{ j }}
-    {%- endfor %}
-    \end{checkboxes}
+{%- endfor %}
+
+\newpage
+\begin{center}
+{{ score.basics.qr }}
+\end{center}
+
+\begin{tabular}{ | r  {{ score.basics.max_answers4latex }} | }
+{% for i in score.card %}
+
+{% set outer_loop = loop %}
+
+{% for k in [1,2] %}
+
+\hline
+
+{{ outer_loop.index }} %
+
+
+{% for j in i.answers %}
+ & $\square$
+{% endfor %}
+
+{% for j in range(score.basics.max_answers - i.answers | length ) %}
+ & X
+{% endfor %}
+ \\
 
 {% endfor %}
+{% endfor %}
+\hline
+\end{tabular}
+
+\newpage
+
+
 \end{document}
