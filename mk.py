@@ -6,12 +6,45 @@ import json
 import hashlib
 import subprocess
 import os
+import sys
 import struct
+
+import configparser
+
+
+CFG = configparser.ConfigParser()
+CFG.read('config.ini')
+SECTION="DEFAULT"
+
 
 env = jinja2.Environment(
     loader=jinja2.FileSystemLoader(['./templates/'])
 )
+env.filters['jsonify'] = json.dumps
 
+def genqr(content, outfile):
+    if os.path.exists(outfile):
+        return
+    cmd=['qrencode', 
+        '-t', 'png',
+        '-o', outfile,
+        '-d', '600',
+        content,
+        ]
+    subprocess.run(cmd)
+
+def gen_common_qrs():
+    # line row
+    for i in ['l','r']:
+        # begin end
+        for j in ['b', 'e']: 
+            for k in range(int(CFG[SECTION]['num_lines'])):
+                for r in range(int(CFG[SECTION]['NUM_REPEATS'])):
+                    ss = f'{i}.{j}.{k}.{r}.png'
+                    genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png")
+            for k in range(int(CFG[SECTION]['num_rows'])):
+                ss = f'{i}.{j}.{k}.png'
+                genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png")
 
 q=[
     {
@@ -78,8 +111,8 @@ def doit():
         tmp_latex['question'] = i['q']
         tmp_latex['answers'] = []
 
-        tmp_score = {'question': [], 'answers': [] }
-        tmp_score['question'].append(i['id'])
+        tmp_score = {'question': '', 'answers': [] }
+        tmp_score['question'] = i['id']
 
         nanswers = len(i['a'])
         if nanswers > max_answers:
@@ -107,18 +140,17 @@ def doit():
     subprocess.run(cmd, input=crypted).stdout
     rscore = {}
     rscore['basics'] = {
-        'qr': r'\includegraphics[width=8cm]{' + of + '}',
+        'qr': of,
         'max_answers': max_answers,
         'max_answers4latex': " ".join(['| l ' for i in range(max_answers)]),
     }
     rscore['card'] = scard
 
     tmpl = env.get_template('t.tex')
-    print(tmpl.render(qlatex=qlatex, score=rscore))
+    print(json.dumps(rscore, indent=1), file=sys.stderr)
+    print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION]))
 
 
-
-
-    
-
-doit()
+if __name__ == "__main__":
+    gen_common_qrs()
+    doit()

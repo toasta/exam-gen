@@ -4,13 +4,13 @@
 \usepackage{enumitem}
 \usepackage{amsfonts}
 \usepackage{tabularx}
-%\DeclareGraphicsExtensions{.png}
+\parindent0mm
 
 \begin{document}
 \newlist{checkboxes}{itemize}{2}
 \setlist[checkboxes]{label=$\square$}
 {% for i in qlatex %}
-    {{ i.question }}
+    {{ loop.index }}: {{ i.question }}
 
     \begin{checkboxes}
     {% for j in i.answers %}
@@ -21,34 +21,48 @@
 
 \newpage
 \begin{center}
-{{ score.basics.qr }}
-\end{center}
+\includegraphics[width=5cm]{{ '{'}}{{ score.basics.qr }}}
 
-\begin{tabular}{ | r  {{ score.basics.max_answers4latex }} | }
-{% for i in score.card %}
 
-{% set outer_loop = loop %}
-
-{% for k in [1,2] %}
-
+\begin{tabular}{ | c | c | {{ '| c' * score['basics']['max_answers'] }} | c |}
+\hline
+&
+{% for row in range(score['basics']['max_answers'] ) %}
+    & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/r.b.{{ row }}.png}
+{% endfor %}
+&
+\\
 \hline
 
-{{ outer_loop.index }} %
+{% for line in range(score['card'] | length) %}
+    {% for rep in range(cfg.num_repeats | int) %}
+        \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
 
+        & {{ line }}.{{ rep }} 
+        {% for row in range(score['basics']['max_answers']) %}
 
-{% for j in i.answers %}
- & $\square$
+            &
+            {% if score['card'][line] is defined and score['card'][line]['answers'][row] is defined%}
+                $\square$
+            {% else %}
+
+            {% endif %}
+        {% endfor %}
+        & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
+        \\
+    {% endfor %}
+    \hline
 {% endfor %}
 
-{% for j in range(score.basics.max_answers - i.answers | length ) %}
- & X
+&
+{% for row in range(score['basics']['max_answers'] ) %}
+    & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/r.e.{{ row }}.png}
 {% endfor %}
- \\
-
-{% endfor %}
-{% endfor %}
-\hline
+&
+\\
+    \hline
 \end{tabular}
+\end{center}
 
 \newpage
 
