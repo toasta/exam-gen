@@ -7,28 +7,40 @@
 \parindent0mm
 
 \begin{document}
-\newlist{checkboxes}{itemize}{2}
-\setlist[checkboxes]{label=$\square$}
+
+Name:
+Unterschrift:
+
+Hinweise:
+
+alle Fragen koennen mehrere richtige Antworten haben.
+alle Fragen koennen auch keine richtige Antwort beinhalten.
+
+zum korrigieren verwenden Sie die naechste Zeile des Antwortbogens der gleichen Frage.
+Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen nicht gueltig.
+
 {% for i in qlatex %}
     {{ loop.index }}: {{ i.question }}
 
-    \begin{checkboxes}
+    \begin{enumerate}
     {% for j in i.answers %}
         \item {{ j }}
     {%- endfor %}
-    \end{checkboxes}
+    \end{enumerate}
 {%- endfor %}
 
 \newpage
+Antwortbogen:
+
+\includegraphics[width=4cm]{{ '{'}}{{ score.basics.qr }}}
 \begin{center}
-\includegraphics[width=5cm]{{ '{'}}{{ score.basics.qr }}}
 
 
 \begin{tabular}{ | c | c | {{ '| c' * score['basics']['max_answers'] }} | c |}
 \hline
 &
 {% for row in range(score['basics']['max_answers'] ) %}
-    & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/r.b.{{ row }}.png}
+    & \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/r.b.{{ row }}.png}
 {% endfor %}
 &
 \\
@@ -36,9 +48,11 @@
 
 {% for line in range(score['card'] | length) %}
     {% for rep in range(cfg.num_repeats | int) %}
-        \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
+    \noindent\parbox[c]{10mm}{
+        \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
+        }
 
-        & {{ line }}.{{ rep }} 
+        & {{ line+1 }}.{{ rep+1 }} 
         {% for row in range(score['basics']['max_answers']) %}
 
             &
@@ -48,7 +62,10 @@
 
             {% endif %}
         {% endfor %}
-        & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
+        &
+    \noindent\parbox[c]{10mm}{
+         \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
+         }
         \\
     {% endfor %}
     \hline
@@ -56,7 +73,10 @@
 
 &
 {% for row in range(score['basics']['max_answers'] ) %}
-    & \includegraphics{{ '{' }}{{cfg.static_qr_dir}}/r.e.{{ row }}.png}
+    & 
+    \noindent\parbox[c]{10mm}{
+    \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/r.e.{{ row }}.png}
+    }
 {% endfor %}
 &
 \\
