@@ -46,7 +46,7 @@ for i in detections:
         if rep not in res[what][line].keys():
             res[what][line][rep] = {}
 
-        res[ what ][ line ][ rep ][ begend ] = int(center[1])
+        res[ what ][ line ][ rep ][ begend ] = center
         continue
 
     if what == 'row':
@@ -56,17 +56,36 @@ for i in detections:
         if row not in res[what].keys():
             res[what][row] = {}
 
-        res[ what ][ row ][ begend ] = int(center[0])
+        res[ what ][ row ][ begend ] = center
         continue
 
 
 
-print(json.dumps(res))
 
-square = 20
+# https://stackoverflow.com/questions/3252194/numpy-and-line-intersections
+def get_intersect(a1, a2, b1, b2):
+    """
+    Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
+    a1: [x, y] a point on the first line
+    a2: [x, y] another point on the first line
+    b1: [x, y] a point on the second line
+    b2: [x, y] another point on the second line
+    """
+    s = np.vstack([a1,a2,b1,b2])        # s for stacked
+    h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
+    l1 = np.cross(h[0], h[1])           # get first line
+    l2 = np.cross(h[2], h[3])           # get second line
+    x, y, z = np.cross(l1, l2)          # point of intersection
+    if z == 0:                          # lines are parallel
+        return (float('inf'), float('inf'))
+    return (x/z, y/z)
+
+
+square = 22
+
 
 for line in range(8):
-    for row in range(8):
+    for row in range(2,5):
         if row not in res['row'].keys():
             continue
         if line not in res['line'].keys():
@@ -74,21 +93,21 @@ for line in range(8):
 
         rep=0
 
-        #TODO linear interpolate that between begin and end and look at x resp. y from that function
-
-        center = [
+        isect = get_intersect(
+            res['row'][row]['end'],
             res['row'][row]['begin'],
+            res['line'][line][rep]['end'],
             res['line'][line][rep]['begin'],
-        ]
+            )
 
-        top_left_x = int(center[0] + square/-2)
-        top_left_y = int(center[1] + square/-2)
-        bottom_right_x =  int(center[0] + square/2)
-        bottom_right_y =  int(center[1] + square/2)
+        # TODO --- add empty lines so we can get 'gray average value' of just the square (227 here)
 
         # opencv/numpy y x 
-        avg = np.average(img[top_left_y:bottom_right_y,top_left_x:bottom_right_x])
+        avg = int(np.average(img[
+            int(isect[1]+square/-2):int(isect[1]+square/2),
+            int(isect[0]+square/-2):int(isect[0]+square/2),
+            ]))
         checked=False
-        if avg < 192:
+        if avg < 200:
             checked=True
         print(f'{line+1=}, {rep+1=}, {row+1=}, {avg=}, {checked=}')
