@@ -2,6 +2,10 @@
 \usepackage{geometry}
 \geometry{
 a4paper,
+left=10mm,
+right=10mm,
+top=10mm,
+bottom=10mm,
 }
 \usepackage{graphicx}
 \usepackage{amsfonts}
@@ -37,8 +41,9 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gl
 {%- endfor %}
 
 {% macro april(sid) %}
-        \noindent\parbox[c][8mm][c]{8mm}{
-            \includegraphics[width=8mm]{{ '{'}}{{  short2object[sid].filename }}}
+        \noindent\parbox[c][7mm][c]{7mm}{
+            \centering
+            \includegraphics[width=6mm]{{ '{'}}{{  short2object[sid].filename }}}
         }
 {% endmacro %}
 
@@ -46,7 +51,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gl
 \newpage
 Antwortbogen:
 
-\includegraphics[width=6cm]{{ '{'}}{{ score.basics.qr }}}
+\includegraphics[width=5cm]{{ '{'}}{{ score.basics.qr }}}
 \begin{center}
 
 
