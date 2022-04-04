@@ -22,15 +22,18 @@ env = jinja2.Environment(
 )
 env.filters['jsonify'] = json.dumps
 
-def genqr(content, outfile):
+def genqr(content, outfile, micro=False, micro_version=3):
     if os.path.exists(outfile):
         return
     cmd=['qrencode', 
         '-t', 'png',
         '-o', outfile,
         '-d', '600',
-        content,
         ]
+    if micro:
+        cmd.extend(["-M", "-v", str(micro_version)])
+    cmd.append(content)
+    #print(json.dumps(cmd))
     subprocess.run(cmd)
 
 def gen_common_qrs():
@@ -40,11 +43,11 @@ def gen_common_qrs():
         for j in ['b', 'e']: 
             for k in range(int(CFG[SECTION]['num_lines'])):
                 for r in range(int(CFG[SECTION]['NUM_REPEATS'])):
-                    ss = f'{i}.{j}.{k}.{r}.png'
-                    genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png")
+                    ss = f'{i}.{j}.{k}.{r}'
+                    genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png", micro=True)
             for k in range(int(CFG[SECTION]['num_rows'])):
-                ss = f'{i}.{j}.{k}.png'
-                genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png")
+                ss = f'{i}.{j}.{k}'
+                genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png", micro=True)
 
 q=[
     {

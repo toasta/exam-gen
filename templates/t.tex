@@ -29,27 +29,61 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen nicht guel
     \end{enumerate}
 {%- endfor %}
 
+{% macro col2() %}
+    {% for row in range(score['basics']['max_answers'] ) %}
+        & {{ loop.index }}
+    {% endfor %}
+{% endmacro %}
+
+{% macro cols(begend="X", bottom=False ) %}
+    {% if bottom %}
+    &
+        {% for row in range(score['basics']['max_answers'] ) %}
+            & {{ loop.index }}
+        {% endfor %}
+        & \\
+        & & 
+    {% else %}
+        &  &
+    {% endif %}
+    
+    {% for row in range(score['basics']['max_answers'] ) %}
+        \noindent\parbox[c]{7mm}{
+            \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/r.{{begend}}.{{ row }}.png}
+            } &
+    {% endfor %}
+    \\
+    {% if bottom %}
+    {% endif %}
+    
+    {% if not bottom %}
+        &
+        {% for row in range(score['basics']['max_answers'] ) %}
+            & {{ loop.index }}
+        {% endfor %}
+        &
+        \\
+        \hline
+        \hline
+    {% endif %}
+{%- endmacro %}
+
 \newpage
 Antwortbogen:
 
-\includegraphics[width=4cm]{{ '{'}}{{ score.basics.qr }}}
+\includegraphics[width=6cm]{{ '{'}}{{ score.basics.qr }}}
 \begin{center}
 
 
-\begin{tabular}{ | c | c | {{ '| c' * score['basics']['max_answers'] }} | c |}
+\begin{tabular}{ | c | c | {{ '| c' * score['basics']['max_answers'] }} || c |}
 \hline
-&
-{% for row in range(score['basics']['max_answers'] ) %}
-    & \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/r.b.{{ row }}.png}
-{% endfor %}
-&
-\\
-\hline
+{{ cols(begend='b', bottom=False) }} 
+
 
 {% for line in range(score['card'] | length) %}
     {% for rep in range(cfg.num_repeats | int) %}
-    \noindent\parbox[c]{10mm}{
-        \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
+    \noindent\parbox[c]{7mm}{
+        \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
         }
 
         & {{ line+1 }}.{{ rep+1 }} 
@@ -63,24 +97,18 @@ Antwortbogen:
             {% endif %}
         {% endfor %}
         &
-    \noindent\parbox[c]{10mm}{
-         \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
+    \noindent\parbox[c]{7mm}{
+         \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
          }
         \\
     {% endfor %}
-    \hline
+    \hline 
 {% endfor %}
 
-&
-{% for row in range(score['basics']['max_answers'] ) %}
-    & 
-    \noindent\parbox[c]{10mm}{
-    \includegraphics[width=10mm]{{ '{' }}{{cfg.static_qr_dir}}/r.e.{{ row }}.png}
-    }
-{% endfor %}
-&
-\\
-    \hline
+\hline \\
+{{ cols(begend='e', bottom=True) }}
+\hline
+
 \end{tabular}
 \end{center}
 
