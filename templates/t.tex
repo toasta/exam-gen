@@ -36,6 +36,12 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gl
 
 {%- endfor %}
 
+{% macro april(sid) %}
+        \noindent\parbox[c][8mm][c]{8mm}{
+            \includegraphics[width=8mm]{{ '{'}}{{  short2object[sid].filename }}}
+        }
+{% endmacro %}
+
 
 \newpage
 Antwortbogen:
@@ -48,7 +54,7 @@ Antwortbogen:
 
 \multicolumn{2}{c||}{ } 
 {% for row in range(score['basics']['max_answers']) %}
-        & \includegraphics{{ '{'}}{{  short2object["{}.{}.{}".format('row', 'begin', row)].filename }}}
+        & {{ april("{}.{}.{}".format('row', 'begin', row)) }} 
 {% endfor %}
 \\
 \multicolumn{2}{c||}{ } 
@@ -60,9 +66,11 @@ Antwortbogen:
 \hline
 \hline
 
+
 {% for line in range(score['card'] | length) %}
     {% for rep in range(cfg.num_repeats | int) %}
-        \includegraphics{{ '{'}}{{  short2object["{}.{}.{}.{}".format('line', 'begin', line, rep)].filename }}}
+        {{ april("{}.{}.{}.{}".format('line', 'begin', line, rep)) }}
+
         & {{ line+1 }}.{{ rep+1 }} 
          
         {% for row in range(score['basics']['max_answers']) %}
@@ -73,8 +81,7 @@ Antwortbogen:
 
             {% endif %}
         {% endfor %}
-        &
-        \includegraphics{{ '{'}}{{  short2object["{}.{}.{}.{}".format('line', 'end', line, rep)].filename }}}
+        &  {{ april("{}.{}.{}.{}".format('line', 'end', line, rep)) }}
         \\
     {% endfor %}
     \hline 
@@ -88,7 +95,7 @@ Antwortbogen:
 \\
 \multicolumn{2}{c||}{ } 
 {% for row in range(score['basics']['max_answers']) %}
-        & \includegraphics{{ '{'}}{{  short2object["{}.{}.{}".format('row', 'begin', row)].filename }}}
+    & {{ april("{}.{}.{}".format('row', 'end', row)) }}
 {% endfor %}
 
 \end{tabular}
