@@ -22,6 +22,7 @@ env = jinja2.Environment(
 )
 env.filters['jsonify'] = json.dumps
 
+
 def genqr(content, outfile, micro=False, micro_version=3):
     if os.path.exists(outfile):
         return
@@ -36,18 +37,7 @@ def genqr(content, outfile, micro=False, micro_version=3):
     #print(json.dumps(cmd))
     subprocess.run(cmd)
 
-def gen_common_qrs():
-    # line row
-    for i in ['l','r']:
-        # begin end
-        for j in ['b', 'e']: 
-            for k in range(int(CFG[SECTION]['num_lines'])):
-                for r in range(int(CFG[SECTION]['NUM_REPEATS'])):
-                    ss = f'{i}.{j}.{k}.{r}'
-                    genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png", micro=True)
-            for k in range(int(CFG[SECTION]['num_rows'])):
-                ss = f'{i}.{j}.{k}'
-                genqr(ss, CFG[SECTION]['static_qr_dir'] + "/" + ss + ".png", micro=True)
+    tag2id = {}
 
 q=[
     {
@@ -127,7 +117,7 @@ def doit():
     data['answers'] = {}
 
     qlatex = []
-    random.seed(43123)
+    #random.seed(43123)
     scard = []
     for i in random.sample(q, len(q)):
         tmp_latex = {}
@@ -171,9 +161,10 @@ def doit():
 
     tmpl = env.get_template('t.tex')
     print(json.dumps(rscore, indent=1), file=sys.stderr)
-    print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION]))
+    print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION], short2object=short2object['short2object']))
 
 
 if __name__ == "__main__":
-    gen_common_qrs()
+    with open("markers.json") as fh:
+        short2object = json.load(fh)
     doit()

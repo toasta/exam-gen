@@ -1,9 +1,12 @@
 \documentclass{article}
-\usepackage{a4wide}
+\usepackage{geometry}
+\geometry{
+a4paper,
+}
 \usepackage{graphicx}
-\usepackage{enumitem}
 \usepackage{amsfonts}
 \usepackage{tabularx}
+\usepackage[inline,shortlabels]{enumitem}
 \parindent0mm
 
 \begin{document}
@@ -17,56 +20,22 @@ alle Fragen koennen mehrere richtige Antworten haben.
 alle Fragen koennen auch keine richtige Antwort beinhalten.
 
 zum korrigieren verwenden Sie die naechste Zeile des Antwortbogens der gleichen Frage.
-Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen nicht gueltig.
+
+Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gleichen Fragennummer ungueltig.
 
 {% for i in qlatex %}
     {{ loop.index }}: {{ i.question }}
 
-    \begin{enumerate}
+    \begin{center}
+    \begin{enumerate*}[series=tobecont, itemjoin=\quad]
     {% for j in i.answers %}
         \item {{ j }}
     {%- endfor %}
-    \end{enumerate}
+    \end{enumerate*}
+    \end{center}
+
 {%- endfor %}
 
-{% macro col2() %}
-    {% for row in range(score['basics']['max_answers'] ) %}
-        & {{ loop.index }}
-    {% endfor %}
-{% endmacro %}
-
-{% macro cols(begend="X", bottom=False ) %}
-    {% if bottom %}
-    &
-        {% for row in range(score['basics']['max_answers'] ) %}
-            & {{ loop.index }}
-        {% endfor %}
-        & \\
-        & & 
-    {% else %}
-        &  &
-    {% endif %}
-    
-    {% for row in range(score['basics']['max_answers'] ) %}
-        \noindent\parbox[c]{7mm}{
-            \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/r.{{begend}}.{{ row }}.png}
-            } &
-    {% endfor %}
-    \\
-    {% if bottom %}
-    {% endif %}
-    
-    {% if not bottom %}
-        &
-        {% for row in range(score['basics']['max_answers'] ) %}
-            & {{ loop.index }}
-        {% endfor %}
-        &
-        \\
-        \hline
-        \hline
-    {% endif %}
-{%- endmacro %}
 
 \newpage
 Antwortbogen:
@@ -75,20 +44,28 @@ Antwortbogen:
 \begin{center}
 
 
-\begin{tabular}{ | c | c | {{ '| c' * score['basics']['max_answers'] }} || c |}
-\hline
-{{ cols(begend='b', bottom=False) }} 
+\begin{tabular}{ c | c | {{ '| c' * score['basics']['max_answers'] }} || c }
 
+\multicolumn{2}{c||}{ } 
+{% for row in range(score['basics']['max_answers']) %}
+        & \includegraphics{{ '{'}}{{  short2object["{}.{}.{}".format('row', 'begin', row)].filename }}}
+{% endfor %}
+\\
+\multicolumn{2}{c||}{ } 
+{% for row in range(score['basics']['max_answers']) %}
+        & {{ row + 1 }}
+{% endfor %}
+\\
+
+\hline
+\hline
 
 {% for line in range(score['card'] | length) %}
     {% for rep in range(cfg.num_repeats | int) %}
-    \noindent\parbox[c]{7mm}{
-        \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/l.b.{{ line }}.{{rep}}.png}
-        }
-
+        \includegraphics{{ '{'}}{{  short2object["{}.{}.{}.{}".format('line', 'begin', line, rep)].filename }}}
         & {{ line+1 }}.{{ rep+1 }} 
+         
         {% for row in range(score['basics']['max_answers']) %}
-
             &
             {% if score['card'][line] is defined and score['card'][line]['answers'][row] is defined%}
                 $\square$
@@ -97,17 +74,22 @@ Antwortbogen:
             {% endif %}
         {% endfor %}
         &
-    \noindent\parbox[c]{7mm}{
-         \includegraphics[width=5mm]{{ '{' }}{{cfg.static_qr_dir}}/l.e.{{ line }}.{{rep}}.png}
-         }
+        \includegraphics{{ '{'}}{{  short2object["{}.{}.{}.{}".format('line', 'end', line, rep)].filename }}}
         \\
     {% endfor %}
     \hline 
 {% endfor %}
 
-\hline \\
-{{ cols(begend='e', bottom=True) }}
-\hline
+
+\multicolumn{2}{c||}{ } 
+{% for row in range(score['basics']['max_answers']) %}
+        & {{ row + 1 }}
+{% endfor %}
+\\
+\multicolumn{2}{c||}{ } 
+{% for row in range(score['basics']['max_answers']) %}
+        & \includegraphics{{ '{'}}{{  short2object["{}.{}.{}".format('row', 'begin', row)].filename }}}
+{% endfor %}
 
 \end{tabular}
 \end{center}

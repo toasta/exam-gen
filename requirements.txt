@@ -1,2 +1,6 @@
 jinja2
-fiducialary
+dt-apriltags
+numpy
+opencv-python-headless
+moms_apriltag
+imageio
