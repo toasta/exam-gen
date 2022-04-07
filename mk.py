@@ -145,6 +145,7 @@ def doit():
 
 
 if __name__ == "__main__":
-    with open("markers.json") as fh:
+    mfile="markers-simple.json"
+    with open(mfile) as fh:
         short2object = json.load(fh)
     doit()

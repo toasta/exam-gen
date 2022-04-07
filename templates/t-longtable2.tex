@@ -2,6 +2,7 @@
 \usepackage{geometry}
 \usepackage{longtable}
 \usepackage{multirow}
+\usepackage{tabularx}
 \geometry{
 a4paper,
 left=15mm,
@@ -18,7 +19,7 @@ bottom=15mm,
 {% macro april(sid) %}
         \noindent\parbox[c][5mm][c]{5mm}{
             \centering
-            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].filename }}}
+            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].fn }}}
             }
         
 {% endmacro %}
@@ -53,21 +54,36 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 
 {% for i in qlatex %}
     
+    \begin{samepage}
+
     {{ loop.index }}: {{ i.q }}\hfill({{i.points}}P)
 
-    \begin{tabular}{l l {{ 'l' * 3 }} }
-    \multirow{ {{ i.a | length }}    }{*}{
+    \begin{minipage}{.1\textwidth}
         \includegraphics[width=2cm]{{ '{'}}{{ score.basics.qr }}}
-    }
+    \end{minipage}
+    \begin{minipage}{.8\textwidth}
+        \begin{tabularx}{\textwidth}{X | c c c | c}
+            {% for jj in range(3) %}
+              & {{ april("col." + jj | string ) }}
+            {% endfor %}
+            \\
+            
+            {% for j in i.a %}
+                {{ j }} 
+                {% for i in range(3) %}
+                    & $\square$
+                {%- endfor %}
+                & {{ april("row." + loop.index | string ) }}
+                \\
+            {% endfor %}
+        \end{tabularx}
+    \end{minipage}
+    \end{samepage}
 
-    {% for j in i.a %}
-        & {{ j }} 
-        {% for i in range(3) %}
-            & $\square$
-        {%- endfor %}
-        \\
-    {% endfor %}
-\end{tabular}
+
+\hrule
+
+
     
 {% endfor %}
 
