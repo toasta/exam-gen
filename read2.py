@@ -14,24 +14,22 @@ import numpy as np
 
 img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
 
-barcodes = pyzbar.decode(img)
+if 1==0:
+    barcodes = pyzbar.decode(img)
 
 
+    qqr = []
+    for barcode in barcodes:
+        x, y , w, h = barcode.rect
+        center = (int(x+w/2), int(y+h/2))
+        qqr.append({ 'x': center[0], 'y':center[1], 'bc': barcode})
 
-qqr = []
-for barcode in barcodes:
-    x, y , w, h = barcode.rect
-    center = (int(x+w/2), int(y+h/2))
-    qqr.append({ 'x': center[0], 'y':center[1], 'bc': barcode})
-
-#print(f'found {len(qqr)} barcodes; centers:{lambda x: f"" } ')
-print(f'found {len(qqr)} barcodes:')
-tmp = []
-for i in qqr:
-    tmp.append('({} {})'.format(i['x'],i['y']))
-print(",".join(tmp))
-
-sys.exit(1)
+    #print(f'found {len(qqr)} barcodes; centers:{lambda x: f"" } ')
+    print(f'found {len(qqr)} barcodes:')
+    tmp = []
+    for i in qqr:
+        tmp.append('({} {})'.format(i['x'],i['y']))
+    print(",".join(tmp))
 
 det = dt_apriltags.Detector(
     families='tag16h5',
@@ -41,7 +39,7 @@ det = dt_apriltags.Detector(
 
 detections = det.detect(img)
 
-with open("markers.json") as fh:
+with open("markers-simple.json") as fh:
     markers = json.load(fh)
     id2object = markers['id2object']
 
@@ -49,42 +47,58 @@ with open("markers.json") as fh:
 #print(json.dumps(id2object))
 #sys.exit(1)
 
-res = {
-    'line': {},
-    'row': {},
-}
+markers = []
 for i in detections:
-    print(i)
-
     _id = i.tag_id
     center = i.center
+    markers.append({'_id': _id, 'x': center[0], 'y': center[1], 'obj': i})
+
+print("___________________________________________________")
+#print(markers)
+
+# scan all 'Row1' Markers.
+# each
+#  go down to til linemarkers (rows?) does not increase anymore
+#  record qr-code seen while going down.
+#  now search between columnmarker0 and linemarker[-1] 
+#
+
+
+
+markers_by_type = {}
+markers_by_type_and_value = {}
+
+for i in markers:
+    _id = i['_id']
     o = id2object[str(_id)]
-    print(json.dumps(o, indent=1))
-    ss = o['ss']
-    what = o['what']
-    if what == 'line':
-        line = o['line']
-        rep = o['repeat']
-        begend = o['beginend']
+    _type = o['what']
+    _val = str(o['val'])
+    o['obj'] = i
 
-        if line not in res[what].keys():
-            res[what][line] = {}
+    if _type not in markers_by_type:
+        markers_by_type[_type] = []
 
-        if rep not in res[what][line].keys():
-            res[what][line][rep] = {}
+    markers_by_type[_type].append(o)
 
-        res[ what ][ line ][ rep ][ begend ] = center
-        continue
 
-    if what == 'row':
-        row = o['row']
-        begend = o['beginend']
 
-        if row not in res[what].keys():
-            res[what][row] = {}
+    if _type not in markers_by_type_and_value:
+        markers_by_type_and_value[_type] = {}
+    if _val not in markers_by_type_and_value[_type]:
+        markers_by_type_and_value[_type][_val] = []
 
-        res[ what ][ row ][ begend ] = center
-        continue
+    markers_by_type_and_value[_type][_val].append(o)
+
+print(markers_by_type_and_value['col']['1'][0])
+
+col1markers_ordered =  sorted(markers_by_type_and_value['col']['1'],
+    key=lambda x: x['obj']['y']
+)
+
+        
+for i in col1markers_ordered:
+    print('{}/{}'.format(i['obj']['x'], i['obj']['y']))
+
 
 
 
@@ -108,33 +122,34 @@ def get_intersect(a1, a2, b1, b2):
     return (x/z, y/z)
 
 
-square = 22
+def do_count():
+    square = 22
 
 
-for line in range(8):
-    for row in range(2,5):
-        if row not in res['row'].keys():
-            continue
-        if line not in res['line'].keys():
-            continue
+    for line in range(8):
+        for row in range(2,5):
+            if row not in res['row'].keys():
+                continue
+            if line not in res['line'].keys():
+                continue
 
-        rep=0
+            rep=0
 
-        isect = get_intersect(
-            res['row'][row]['end'],
-            res['row'][row]['begin'],
-            res['line'][line][rep]['end'],
-            res['line'][line][rep]['begin'],
-            )
+            isect = get_intersect(
+                res['row'][row]['end'],
+                res['row'][row]['begin'],
+                res['line'][line][rep]['end'],
+                res['line'][line][rep]['begin'],
+                )
 
-        # TODO --- add empty lines so we can get 'gray average value' of just the square (227 here)
+            # TODO --- add empty lines so we can get 'gray average value' of just the square (227 here)
 
-        # opencv/numpy y x 
-        avg = int(np.average(img[
-            int(isect[1]+square/-2):int(isect[1]+square/2),
-            int(isect[0]+square/-2):int(isect[0]+square/2),
-            ]))
-        checked=False
-        if avg < 200:
-            checked=True
-        print(f'{line+1=}, {rep+1=}, {row+1=}, {avg=}, {checked=}')
+            # opencv/numpy y x 
+            avg = int(np.average(img[
+                int(isect[1]+square/-2):int(isect[1]+square/2),
+                int(isect[0]+square/-2):int(isect[0]+square/2),
+                ]))
+            checked=False
+            if avg < 200:
+                checked=True
+            print(f'{line+1=}, {rep+1=}, {row+1=}, {avg=}, {checked=}')
