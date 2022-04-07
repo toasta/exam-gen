@@ -28,15 +28,17 @@ bottom=15mm,
 
 
 \begin{tabular}{l l l}
-Name: & & \multirow{3}{c}{
+Name: & & \multirow{2}{*}{
     \includegraphics[width=.2\textwidth]{{ '{'}}{{ score.basics.qr }}}
     } \\
 Unterschrift: & & \\
-\multicolumn{ {{ 3 }} }{ p{.7\textwidth}} {
+\multicolumn{ {{ 2 }} }{ p{.7\textwidth}} {
 Hinweise:
 
 alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
+
 Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
+
 Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleichen Frage ungueltig.
 }
 \end{tabular}
@@ -45,15 +47,19 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 
 \begin{longtable}{ {{ " c " * (mac) }} }
 
-LB &
+
 {% for row in range(ma) %}
     & {{ april("{}.{}.{}".format('row', 'begin', row)) }}
 {% endfor %}
-LE \\
+ \\
 \endfirsthead
 \endhead
 
+{% for row in range(ma) %}
+    & {{ april("{}.{}.{}".format('row', 'end', row)) }}
+{% endfor %}
 \\
+\endfoot
 
 
 {% for i in qlatex %}
@@ -64,19 +70,28 @@ LE \\
     \\
 
     
+
     {% for j in i.answers %}
         & \multicolumn{1}{
-            p{ {{ 1/mac }}\textwidth  }
+            p{ {{ 1/(mac+1) }}\textwidth  }
             }
-            {  {{ j }} }
+            { \centering {{ j }} }
     {%- endfor %}
     \\
     
-    {{ april("{}.{}.{}".format('line', 'begin', loop.index, 1)) }}
+    {% for k in range(3) %}
+    {{ april("{}.{}.{}".format('line', 'begin', loop.index, k)) }}
     {% for j in i.answers %}
         & $\square$
     {%- endfor %}
-    & {{ april("{}.{}.{}".format('line', 'end', loop.index, 1)) }}
+    {% if (i.answers | length) < ma %}
+    % fill
+        {{ " & " * (ma - (i.answers | length)) }}
+    % fill
+    {% endif %}
+    & {{ april("{}.{}.{}".format('line', 'end', loop.index, k)) }}
+    \\
+    {% endfor %}
     \\
 
 {% endfor %}

@@ -50,36 +50,36 @@ q=[
             { 'ap': 'sha2', 'sol': False },
         ]
     },
-#     {
-#         'id': '3ae54f9257bb8c6b8caa2c1094d940c8',
-#         'q': 'Wofuer steht SFP?',
-#         'a': [
-#             { 'ap': 'Small formfaktor pluggable', 'sol': True },
-#             { 'ap': 'Super fine phase', 'sol': False },
-#             { 'ap': 'signal faktor phase', 'sol': False },
-#             { 'ap': 'signal format plug', 'sol': False },
-#         ]
-#     },
-#     {
-#         'id': 'b20de167d27764cc6f423d2ec6d0098a',
-#         'q': 'Wieviele IPV4 Adressen gibt es?',
-#         'a': [
-#             { 'ap': '$2^{24}$', 'sol': False },
-#             { 'ap': '$2^{32}$', 'sol': True },
-#             { 'ap': '$2^{8}$', 'sol': False },
-#             { 'ap': '$2^{16}$', 'sol': False },
-#             { 'ap': '$2^{64}$', 'sol': False },
-#         ]
-#     },
-#     {
-#         'id': 'f24d45a19819f8551c155cf7db5408d8',
-#         'q': 'Wieviele IPV6 Adressen gibt es?',
-#         'a': [
-#             { 'ap': '$2^{64}$', 'sol': False },
-#             { 'ap': '$2^{60}$', 'sol': False },
-#             { 'ap': '$2^{6}$', 'sol': False },
-#         ]
-#     }
+     {
+         'id': '3ae54f9257bb8c6b8caa2c1094d940c8',
+         'q': 'Wofuer steht SFP?',
+         'a': [
+             { 'ap': 'Small formfaktor pluggable', 'sol': True },
+             { 'ap': 'Super fine phase', 'sol': False },
+             { 'ap': 'signal faktor phase', 'sol': False },
+             { 'ap': 'signal format plug', 'sol': False },
+         ]
+     },
+     {
+         'id': 'b20de167d27764cc6f423d2ec6d0098a',
+         'q': 'Wieviele IPV4 Adressen gibt es?',
+         'a': [
+             { 'ap': '$2^{24}$', 'sol': False },
+             { 'ap': '$2^{32}$', 'sol': True },
+             { 'ap': '$2^{8}$', 'sol': False },
+             { 'ap': '$2^{16}$', 'sol': False },
+             { 'ap': '$2^{64}$', 'sol': False },
+         ]
+     },
+     {
+         'id': 'f24d45a19819f8551c155cf7db5408d8',
+         'q': 'Wieviele IPV6 Adressen gibt es?',
+         'a': [
+             { 'ap': '$2^{64}$', 'sol': False },
+             { 'ap': '$2^{60}$', 'sol': False },
+             { 'ap': '$2^{6}$', 'sol': False },
+         ]
+     }
 ]
 ret = []
 
