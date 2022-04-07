@@ -16,9 +16,9 @@ bottom=15mm,
 \begin{document}
 
 {% macro april(sid) %}
-        \noindent\parbox[c][7mm][c]{7mm}{
+        \noindent\parbox[c][5mm][c]{5mm}{
             \centering
-            \includegraphics[width=6mm]{{ '{'}}{{  short2object[sid].filename }}}
+            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].filename }}}
             }
         
 {% endmacro %}
@@ -57,7 +57,6 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
     & {{ april("{}.{}.{}".format('row', 'begin', row)) }}
 {% endfor %}
  \\
-\endfirsthead
 \endhead
 
 {% for row in range(ma) %}
@@ -72,7 +71,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
     \multicolumn{ {{ mac   }} }{l}{
     {{ loop.index }}: {{ i.question }}
     } 
-    \\
+    \\*
 
     
 
@@ -82,7 +81,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
             }
             { \centering {{ j }} }
     {%- endfor %}
-    \\
+    \\*
     
     {% for k in range(3) %}
     {{ april("{}.{}.{}".format('line', 'begin', loop.index, k)) }}
@@ -95,7 +94,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
     % fill
     {% endif %}
     & {{ april("{}.{}.{}".format('line', 'end', loop.index, k)) }}
-    \\
+    \\*
     {% endfor %}
     \\
 

@@ -22,6 +22,8 @@ with open("markers.json") as fh:
     id2object = markers['id2object']
 
 
+#print(json.dumps(id2object))
+#sys.exit(1)
 
 res = {
     'line': {},
@@ -33,6 +35,7 @@ for i in detections:
     _id = i.tag_id
     center = i.center
     o = id2object[str(_id)]
+    print(json.dumps(o))
     ss = o['ss']
     what = o['what']
     if what == 'line':
