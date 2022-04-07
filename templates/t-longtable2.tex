@@ -50,59 +50,29 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 \end{tabular}
 
 
-\begin{longtable}{ {{ " c " * (mac) }} }
-
-
-{% for row in range(ma) %}
-    & {{ april("{}.{}.{}".format('row', 'begin', row)) }}
-{% endfor %}
- \\
-\endhead
-
-{% for row in range(ma) %}
-    & {{ april("{}.{}.{}".format('row', 'end', row)) }}
-{% endfor %}
-\\
-\endfoot
-
 
 {% for i in qlatex %}
     
-    \multicolumn{ {{ mac   }} }{l}{
     {{ loop.index }}: {{ i.q }}\hfill({{i.points}}P)
-    } 
-    \\*
 
-    
+    \begin{tabular}{l l {{ 'l' * 3 }} }
+    \multirow{ {{ i.a | length }}    }{*}{
+        \includegraphics[width=2cm]{{ '{'}}{{ score.basics.qr }}}
+    }
 
     {% for j in i.a %}
-        & \multicolumn{1}{
-            p{ {{ 1/(mac+1) }}\textwidth  }
-            }
-            { \centering {{ j }} }
-    {%- endfor %}
-    \\*
-    
-    {% for k in range(3) %}
-    {{ april("{}.{}.{}.{}".format('line', 'begin', loop.index, k)) }}
-    {% for j in i.a %}
-        & $\square$
-    {%- endfor %}
-    {% if (i.a | length) < ma %}
-    % fill
-        {{ " & " * (ma - (i.a | length)) }}
-    % fill
-    {% endif %}
-    & {{ april("{}.{}.{}.{}".format('line', 'end', loop.index, k)) }}
-    \\*
+        & {{ j }} 
+        {% for i in range(3) %}
+            & $\square$
+        {%- endfor %}
+        \\
     {% endfor %}
-    \\
-
+\end{tabular}
+    
 {% endfor %}
-
-\end{longtable}
 
 Ende des Bogens.
 
+\cleardoublepage
 
 \end{document}
