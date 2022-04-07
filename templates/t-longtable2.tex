@@ -1,0 +1,108 @@
+\documentclass{article}
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{multirow}
+\geometry{
+a4paper,
+left=15mm,
+right=15mm,
+top=15mm,
+bottom=15mm,
+}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\parindent0mm
+
+\begin{document}
+
+{% macro april(sid) %}
+        \noindent\parbox[c][5mm][c]{5mm}{
+            \centering
+            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].filename }}}
+            }
+        
+{% endmacro %}
+{% set ma = score['basics']['max_answers'] %}
+{% set mac = ma + 2 %}
+
+\begin{tabular}{l l l}
+
+\large Name &  \large Unterschrift &
+    \multirow{2}{*}{
+        \includegraphics[width=4cm]{{ '{'}}{{ score.basics.qr }}}
+    } 
+\\
+\\
+
+\hspace{ .3\textwidth } & \hspace{ .3\textwidth}  \\
+
+\\
+
+\multicolumn{ 2 }{ p{.7\textwidth} }{
+Hinweise:
+
+alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
+
+Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
+
+Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleichen Frage ungueltig.
+} \\
+\end{tabular}
+
+
+\begin{longtable}{ {{ " c " * (mac) }} }
+
+
+{% for row in range(ma) %}
+    & {{ april("{}.{}.{}".format('row', 'begin', row)) }}
+{% endfor %}
+ \\
+\endhead
+
+{% for row in range(ma) %}
+    & {{ april("{}.{}.{}".format('row', 'end', row)) }}
+{% endfor %}
+\\
+\endfoot
+
+
+{% for i in qlatex %}
+    
+    \multicolumn{ {{ mac   }} }{l}{
+    {{ loop.index }}: {{ i.q }}\hfill({{i.points}}P)
+    } 
+    \\*
+
+    
+
+    {% for j in i.a %}
+        & \multicolumn{1}{
+            p{ {{ 1/(mac+1) }}\textwidth  }
+            }
+            { \centering {{ j }} }
+    {%- endfor %}
+    \\*
+    
+    {% for k in range(3) %}
+    {{ april("{}.{}.{}.{}".format('line', 'begin', loop.index, k)) }}
+    {% for j in i.a %}
+        & $\square$
+    {%- endfor %}
+    {% if (i.a | length) < ma %}
+    % fill
+        {{ " & " * (ma - (i.a | length)) }}
+    % fill
+    {% endif %}
+    & {{ april("{}.{}.{}.{}".format('line', 'end', loop.index, k)) }}
+    \\*
+    {% endfor %}
+    \\
+
+{% endfor %}
+
+\end{longtable}
+
+Ende des Bogens.
+
+
+\end{document}
