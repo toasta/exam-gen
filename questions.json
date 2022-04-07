@@ -1,0 +1,111 @@
+[
+    {
+        "id": "7664151f02cd78499b4780e68ea1098a",
+        "q": "Welche Hashfunktionen gelten als unsicher?",
+        "a": [
+            { "ap": "sha2-384", "sol": false },
+            { "ap": "sha2-256", "sol": false },
+            { "ap": "md5", "sol": true },
+            { "ap": "sha1", "sol": true },
+            { "ap": "blake2b", "sol": false }
+        ]
+    },
+     {
+         "id": "3ae54f9257bb8c6b8caa2c1094d940c8",
+         "q": "Wofuer steht SFP?",
+         "a": [
+             { "ap": "Small formfaktor pluggable", "sol": true },
+             { "ap": "Super fine phase", "sol": false },
+             { "ap": "signal faktor phase", "sol": false },
+             { "ap": "signal format plug", "sol": false }
+         ]
+     },
+     {
+         "id": "b20de167d27764cc6f423d2ec6d0098a",
+         "q": "Wieviele IPV4 Adressen gibt es?",
+         "a": [
+             { "ap": "$2^{24}$", "sol": false },
+             { "ap": "$2^{32}$", "sol": true },
+             { "ap": "$2^{8}$", "sol": false },
+             { "ap": "$2^{16}$", "sol": false },
+             { "ap": "$2^{64}$", "sol": false }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Wieviele IPV6 Adressen gibt es?",
+         "a": [
+             { "ap": "$2^{64}$", "sol": false },
+             { "ap": "$2^{128}$", "sol": false },
+             { "ap": "$2^{60}$", "sol": false },
+             { "ap": "$2^{8}$", "sol": false }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Auf welcher Ebene im ISO/OSI Schichtmodell steht ARP?",
+         "a": [
+             { "ap": "1", "sol": false },
+             { "ap": "9", "sol": false },
+             { "ap": "2", "sol": false },
+             { "ap": "3", "sol": false },
+             { "ap": "7", "sol": false },
+             { "ap": "6", "sol": false }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Auf welchen Speicher kann schneller zugegriffen werden",
+         "a": [
+             { "ap": "Festplatte", "sol": false },
+             { "ap": "RAM", "sol": true }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Welches ist kein Routing-Protokoll",
+         "a": [
+             { "ap": "BGP", "sol": false },
+             { "ap": "OSPF", "sol": false },
+             { "ap": "IS-IS", "sol": false },
+             { "ap": "MPLS", "sol": true }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Wofuer steht RAM?",
+         "a": [
+             { "ap": "Random Access Memory", "sol": true },
+             { "ap": "Repeat Access Memory", "sol": false },
+             { "ap": "Random Address Memory", "sol": false },
+             { "ap": "Random Access Method", "sol": false }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Wieviele Bits hat ein Byte?",
+         "a": [
+             { "ap": "32", "sol": false },
+             { "ap": "64", "sol": false }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Wieviele Werte kann ein Byte haben?",
+         "a": [
+             { "ap": "$2^8$", "sol": true },
+             { "ap": "$2^{8-1}$", "sol": false },
+             { "ap": "255", "sol": false },
+             { "ap": "256", "sol": true }
+         ]
+     },
+     {
+         "id": "f24d45a19819f8551c155cf7db5408d8",
+         "q": "Was entspricht $ \\frac{1}{1000000000} * \\frac{1}{s} $",
+         "a": [
+             { "ap": "1 GHz", "sol": true },
+             { "ap": "1 GB", "sol": false },
+             { "ap": "2.4 GHz", "sol": false }
+         ]
+     }
+]
