@@ -74,29 +74,48 @@ def doit():
     qco = 0
 
     data = {}
-    data['question_order'] = []
     data['answers'] = {}
 
     qlatex = []
     #random.seed(43123)
     scard = []
-    for i in random.sample(q, len(q)):
-        tmp_latex = {}
-        tmp_latex['question'] = i['q']
-        tmp_latex['answers'] = []
+    for j, i in enumerate(random.sample(q, len(q))):
 
-        tmp_score = {'question': '', 'answers': [] }
-        tmp_score['question'] = i['id']
+        points = i.get('points', 1)
 
+        tmp_latex = {
+            'q': i['q'],
+            'points': points,
+            'a': []
+        }
         nanswers = len(i['a'])
         if nanswers > max_answers:
             max_answers  = nanswers
 
-        for j in i['a']:
-            tmp_score['answers'].append(j['sol'])
-            tmp_latex['answers'].append(j['ap'])
+        tscore = []
+        for j in random.sample(i['a'], len(i['a'])):
+            tmp_latex['a'].append(j['ap'])
 
-        scard.append(tmp_score)
+            factor = i.get('factor', 1)
+            nofalse = i.get('nofalse')
+            points_checked = 0
+            points_unchecked = 0
+
+            if j['sol'] == True:
+                points_checked = (factor * 1)
+                points_unchecked = (factor * -1)
+                if not nofalse:
+                    points_unchecked = 0
+
+            if j['sol'] == False:
+                points_checked = (factor * -1)
+                points_unchecked = (factor * 1)
+                if not nofalse:
+                    points_unchecked = 0
+
+            tscore.append([points_checked, points_unchecked])
+
+        scard.append(tscore)
         qlatex.append(tmp_latex)
 
 
@@ -116,12 +135,12 @@ def doit():
     rscore['basics'] = {
         'qr': of,
         'max_answers': max_answers,
-        'max_answers4latex': " ".join(['| l ' for i in range(max_answers)]),
     }
     rscore['card'] = scard
 
     tmpl = env.get_template(CFG[SECTION]['TEMPLATE'])
-    print(json.dumps(rscore, indent=1), file=sys.stderr)
+    print(json.dumps(qlatex), file=sys.stderr)
+    print(json.dumps(rscore), file=sys.stderr)
     print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION], short2object=short2object['short2object']))
 
 

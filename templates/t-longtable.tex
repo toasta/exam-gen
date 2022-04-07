@@ -69,13 +69,13 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 {% for i in qlatex %}
     
     \multicolumn{ {{ mac   }} }{l}{
-    {{ loop.index }}: {{ i.question }}
+    {{ loop.index }}: {{ i.q }}\hfill({{i.points}}P)
     } 
     \\*
 
     
 
-    {% for j in i.answers %}
+    {% for j in i.a %}
         & \multicolumn{1}{
             p{ {{ 1/(mac+1) }}\textwidth  }
             }
@@ -85,12 +85,12 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
     
     {% for k in range(3) %}
     {{ april("{}.{}.{}.{}".format('line', 'begin', loop.index, k)) }}
-    {% for j in i.answers %}
+    {% for j in i.a %}
         & $\square$
     {%- endfor %}
-    {% if (i.answers | length) < ma %}
+    {% if (i.a | length) < ma %}
     % fill
-        {{ " & " * (ma - (i.answers | length)) }}
+        {{ " & " * (ma - (i.a | length)) }}
     % fill
     {% endif %}
     & {{ april("{}.{}.{}.{}".format('line', 'end', loop.index, k)) }}
