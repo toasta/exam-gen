@@ -20,9 +20,22 @@ def gen_common():
     co = 0
     short2object = {}
     id2object = {}
-    for i in ['line','row']:
-        # begin end
-        for j in ['begin', 'end']: 
+    for j in ['begin', 'end']: 
+            i='row'
+            for k in range(int(CFG[SECTION]['num_rows'])):
+                ss = f'{i}.{j}.{k}'
+                fn = f'out/{co}.png'
+                o = {
+                    'what': i,
+                    'beginend': j,
+                    'row': k,
+                    'filename': fn,
+                    'ss': ss,
+                }
+                short2object[ss] = o
+                id2object[co] = o
+                co += 1
+            i='line'
             for k in range(int(CFG[SECTION]['num_lines'])):
                 for r in range(int(CFG[SECTION]['NUM_REPEATS'])):
                     fn = f'out/{co}.png'
@@ -38,19 +51,6 @@ def gen_common():
                     short2object[ss] = o
                     id2object[co] = o
                     co += 1
-            for k in range(int(CFG[SECTION]['num_rows'])):
-                ss = f'{i}.{j}.{k}'
-                fn = f'out/{co}.png'
-                o = {
-                    'what': i,
-                    'beginend': j,
-                    'row': k,
-                    'filename': fn,
-                    'ss': ss,
-                }
-                short2object[ss] = o
-                id2object[co] = o
-                co += 1
 
     #r= mapt.generate('tag25h9', range(co))
     r= mapt.generate('tag36h11', range(co))

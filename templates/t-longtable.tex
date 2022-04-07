@@ -84,7 +84,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
     \\*
     
     {% for k in range(3) %}
-    {{ april("{}.{}.{}".format('line', 'begin', loop.index, k)) }}
+    {{ april("{}.{}.{}.{}".format('line', 'begin', loop.index, k)) }}
     {% for j in i.answers %}
         & $\square$
     {%- endfor %}
@@ -93,7 +93,7 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
         {{ " & " * (ma - (i.answers | length)) }}
     % fill
     {% endif %}
-    & {{ april("{}.{}.{}".format('line', 'end', loop.index, k)) }}
+    & {{ april("{}.{}.{}.{}".format('line', 'end', loop.index, k)) }}
     \\*
     {% endfor %}
     \\

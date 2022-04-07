@@ -35,7 +35,7 @@ for i in detections:
     _id = i.tag_id
     center = i.center
     o = id2object[str(_id)]
-    print(json.dumps(o))
+    print(json.dumps(o, indent=1))
     ss = o['ss']
     what = o['what']
     if what == 'line':
