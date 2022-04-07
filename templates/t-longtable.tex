@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{geometry}
+\geometry{
+a4paper,
+left=15mm,
+right=15mm,
+top=15mm,
+bottom=15mm,
+}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{tabularx}
+\usepackage[inline,shortlabels]{enumitem}
+\parindent0mm
+
+\begin{document}
+
+Name:
+Unterschrift:
+
+Hinweise:
+
+alle Fragen koennen mehrere richtige Antworten haben.
+alle Fragen koennen auch keine richtige Antwort beinhalten.
+
+zum korrigieren verwenden Sie die naechste Zeile des Antwortbogens der gleichen Frage.
+
+Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gleichen Fragennummer ungueltig.
+
+\begin{longtable}{ {{ "".join(["|l" for i in range(score['basics']['max_answers'])] }} }
+    \multicolumn{8}{l}{
+    {{ loop.index }}: {{ i.question }}
+    } \\
+
+    {% for j in i.answers %}
+        & {{ j }}
+    {%- endfor %}
+    {% for j in i.answers %}
+        & $\square$
+    {%- endfor %}
+
+
+\end{longtable}
+
+
+\end{document}

@@ -91,6 +91,7 @@ TMPD='/dev/shm/tmp1/'
 os.makedirs(TMPD, exist_ok=True)
 
 def grh(b):
+    #TODO use os.random or secrets
     fh = open('/dev/urandom', 'rb')
     c = fh.read(b)
     return c
@@ -159,7 +160,7 @@ def doit():
     }
     rscore['card'] = scard
 
-    tmpl = env.get_template('t.tex')
+    tmpl = env.get_template(CFG[SECTION]['TEMPLATE'])
     print(json.dumps(rscore, indent=1), file=sys.stderr)
     print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION], short2object=short2object['short2object']))
 
