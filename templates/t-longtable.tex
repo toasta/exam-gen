@@ -25,14 +25,20 @@ bottom=15mm,
 {% set ma = score['basics']['max_answers'] %}
 {% set mac = ma + 2 %}
 
-
-
 \begin{tabular}{l l l}
-Name: & & \multirow{2}{*}{
-    \includegraphics[width=.2\textwidth]{{ '{'}}{{ score.basics.qr }}}
-    } \\
-Unterschrift: & & \\
-\multicolumn{ {{ 2 }} }{ p{.7\textwidth}} {
+
+\large Name &  \large Unterschrift &
+    \multirow{2}{*}{
+        \includegraphics[width=4cm]{{ '{'}}{{ score.basics.qr }}}
+    } 
+\\
+\\
+
+\hspace{ .3\textwidth } & \hspace{ .3\textwidth}  \\
+
+\\
+
+\multicolumn{ 2 }{ p{.7\textwidth} }{
 Hinweise:
 
 alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
@@ -40,9 +46,8 @@ alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
 Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
 
 Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleichen Frage ungueltig.
-}
+} \\
 \end{tabular}
-
 
 
 \begin{longtable}{ {{ " c " * (mac) }} }
@@ -97,6 +102,8 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 {% endfor %}
 
 \end{longtable}
+
+Ende des Bogens.
 
 
 \end{document}
