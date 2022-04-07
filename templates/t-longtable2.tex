@@ -17,9 +17,9 @@ bottom=15mm,
 \begin{document}
 
 {% macro april(sid) %}
-        \noindent\parbox[c][5mm][c]{5mm}{
+        \noindent\parbox[c][4mm][c]{4mm}{
             \centering
-            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].fn }}}
+            \includegraphics[width=3mm]{{ '{'}}{{  short2object[sid].fn }}}
             }
         
 {% endmacro %}
@@ -42,7 +42,7 @@ bottom=15mm,
 \multicolumn{ 2 }{ p{.7\textwidth} }{
 Hinweise:
 
-alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
+alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
 
 Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
 
@@ -54,15 +54,11 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
 
 {% for i in qlatex %}
     
-    \begin{samepage}
 
-    {{ loop.index }}: {{ i.q }}\hfill({{i.points}}P)
+    \section*{ {{ i.q }}\hfill({{i.points}}P)} 
 
-    \begin{minipage}{.1\textwidth}
-        \includegraphics[width=2cm]{{ '{'}}{{ score.basics.qr }}}
-    \end{minipage}
     \begin{minipage}{.8\textwidth}
-        \begin{tabularx}{\textwidth}{X | c c c | c}
+        \begin{tabularx}{\textwidth}{l | c c c | c}
             {% for jj in range(3) %}
               & {{ april("col." + jj | string ) }}
             {% endfor %}
@@ -78,13 +74,12 @@ Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleich
             {% endfor %}
         \end{tabularx}
     \end{minipage}
-    \end{samepage}
+    \begin{minipage}{.1\textwidth}
+        \includegraphics[width=2cm]{{ '{'}}{{ i.qr }}}
+    \end{minipage}
 
 
-\hrule
 
-
-    
 {% endfor %}
 
 Ende des Bogens.

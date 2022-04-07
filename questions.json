@@ -1,6 +1,7 @@
 [
     {
         "q": "Welche Hashfunktionen gelten als unsicher?",
+        "points": 3,
         "a": [
             { "ap": "sha2-384", "sol": false },
             { "ap": "sha2-256", "sol": false },
@@ -12,6 +13,7 @@
     },
      {
          "q": "Wofuer steht SFP?",
+        "points": 6,
          "a": [
              { "ap": "Small Formfaktor Pluggable", "sol": true },
              { "ap": "Super Fine Phase", "sol": false },
@@ -22,6 +24,7 @@
      },
      {
          "q": "Wieviele IPV4 Adressen gibt es?",
+         "points": 2,
          "a": [
              { "ap": "$2^{32}$", "sol": true },
              { "ap": "$2^{24}$", "sol": false },
@@ -32,17 +35,19 @@
      },
      {
          "q": "Wieviele IPV6 Adressen gibt es?",
+         "points": 1,
          "a": [
              { "ap": "$2^{64}$", "sol": false },
              { "ap": "$2^{128}$", "sol": false },
              { "ap": "$2^{60}$", "sol": false },
              { "ap": "$2^{8}$", "sol": false },
              { "ap": "mehr als Atome im Weltall", "sol": false},
-             { "ap": "~ 3.402824e+38", "sol": true, "factor": 2, "nofalse": true}
+             { "ap": "$\\sim 3.402824e+38$", "sol": true, "factor": 2, "nofalse": true}
          ]
      },
      {
          "q": "Auf welcher Ebene im ISO/OSI Schichtmodell steht ARP?",
+         "points": 9,
          "a": [
              { "ap": "1", "sol": false },
              { "ap": "9", "sol": false, "factor": -2 },
@@ -54,6 +59,7 @@
      },
      {
          "q": "Auf welchen Speicher kann schneller zugegriffen werden?",
+         "points": 1,
          "a": [
              { "ap": "Festplatte", "sol": false },
              { "ap": "RAM", "sol": true },
@@ -62,6 +68,7 @@
      },
      {
          "q": "Was ist kein Routing-Protokoll?",
+         "points": 9,
          "a": [
              { "ap": "BGP", "sol": false },
              { "ap": "OSPF", "sol": false },
@@ -72,6 +79,7 @@
      },
      {
          "q": "Wofuer steht RAM?",
+         "points": 9,
          "a": [
              { "ap": "Random Access Memory", "sol": true },
              { "ap": "Repeat Access Memory", "sol": false },
@@ -82,6 +90,7 @@
      },
      {
          "q": "Wieviele Bits hat ein Byte?",
+         "points": 1,
          "a": [
              { "ap": "32", "sol": false },
              { "ap": "64", "sol": false },
@@ -90,6 +99,7 @@
      },
      {
          "q": "Wieviele Werte kann ein Byte haben?",
+         "points": 1,
          "a": [
              { "ap": "$2^8$", "sol": true },
              { "ap": "$2^{8-1}$", "sol": false },
@@ -101,6 +111,7 @@
      },
      {
          "q": "Was entspricht $ \\frac{1}{1000000000} * \\frac{1}{s} $",
+         "points": 4,
          "a": [
              { "ap": "1 GHz", "sol": true },
              { "ap": "1 GB", "sol": false },

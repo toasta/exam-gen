@@ -4,3 +4,4 @@ numpy
 opencv-python-headless
 moms_apriltag
 imageio
+pyzbar
