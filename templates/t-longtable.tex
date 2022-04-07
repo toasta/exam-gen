@@ -1,5 +1,7 @@
 \documentclass{article}
 \usepackage{geometry}
+\usepackage{longtable}
+\usepackage{multirow}
 \geometry{
 a4paper,
 left=15mm,
@@ -9,36 +11,75 @@ bottom=15mm,
 }
 \usepackage{graphicx}
 \usepackage{amsfonts}
-\usepackage{tabularx}
-\usepackage[inline,shortlabels]{enumitem}
 \parindent0mm
 
 \begin{document}
 
-Name:
-Unterschrift:
+{% macro april(sid) %}
+        \noindent\parbox[c][7mm][c]{7mm}{
+            \centering
+            \includegraphics[width=6mm]{{ '{'}}{{  short2object[sid].filename }}}
+            }
+        
+{% endmacro %}
+{% set ma = score['basics']['max_answers'] %}
+{% set mac = ma + 2 %}
 
+
+
+\begin{tabular}{l l l}
+Name: & & \multirow{3}{c}{
+    \includegraphics[width=.2\textwidth]{{ '{'}}{{ score.basics.qr }}}
+    } \\
+Unterschrift: & & \\
+\multicolumn{ {{ 3 }} }{ p{.7\textwidth}} {
 Hinweise:
 
-alle Fragen koennen mehrere richtige Antworten haben.
-alle Fragen koennen auch keine richtige Antwort beinhalten.
+alle Fragen koennen mehrere oder auch keine richtige Antworte(n) haben.
+Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
+Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleichen Frage ungueltig.
+}
+\end{tabular}
 
-zum korrigieren verwenden Sie die naechste Zeile des Antwortbogens der gleichen Frage.
 
-Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen mit der gleichen Fragennummer ungueltig.
 
-\begin{longtable}{ {{ "".join(["|l" for i in range(score['basics']['max_answers'])] }} }
-    \multicolumn{8}{l}{
+\begin{longtable}{ {{ " c " * (mac) }} }
+
+LB &
+{% for row in range(ma) %}
+    & {{ april("{}.{}.{}".format('row', 'begin', row)) }}
+{% endfor %}
+LE \\
+\endfirsthead
+\endhead
+
+\\
+
+
+{% for i in qlatex %}
+    
+    \multicolumn{ {{ mac   }} }{l}{
     {{ loop.index }}: {{ i.question }}
-    } \\
+    } 
+    \\
 
+    
     {% for j in i.answers %}
-        & {{ j }}
+        & \multicolumn{1}{
+            p{ {{ 1/mac }}\textwidth  }
+            }
+            {  {{ j }} }
     {%- endfor %}
+    \\
+    
+    {{ april("{}.{}.{}".format('line', 'begin', loop.index, 1)) }}
     {% for j in i.answers %}
         & $\square$
     {%- endfor %}
+    & {{ april("{}.{}.{}".format('line', 'end', loop.index, 1)) }}
+    \\
 
+{% endfor %}
 
 \end{longtable}
 
