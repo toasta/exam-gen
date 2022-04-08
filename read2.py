@@ -48,37 +48,23 @@ with open("markers-simple.json") as fh:
 #sys.exit(1)
 
 markers = []
-for i in detections:
-    _id = i.tag_id
-    center = i.center
-    markers.append({'_id': _id, 'x': center[0], 'y': center[1], 'obj': i})
-
-print("___________________________________________________")
-#print(markers)
-
-# scan all 'Row1' Markers.
-# each
-#  go down to til linemarkers (rows?) does not increase anymore
-#  record qr-code seen while going down.
-#  now search between columnmarker0 and linemarker[-1] 
-#
-
-
-
 markers_by_type = {}
 markers_by_type_and_value = {}
 
-for i in markers:
-    _id = i['_id']
-    o = id2object[str(_id)]
+for i in detections:
+    tag_id = i.tag_id
+    center = i.center
+
+    o = id2object[str(tag_id)]
     _type = o['what']
     _val = str(o['val'])
-    o['obj'] = i
+    marker = {'tag_id': tag_id, 'x': int(center[0]), 'y': int(center[1]), 'o': o}
+    markers.append(marker)
 
     if _type not in markers_by_type:
         markers_by_type[_type] = []
 
-    markers_by_type[_type].append(o)
+    markers_by_type[_type].append(marker)
 
 
 
@@ -87,17 +73,42 @@ for i in markers:
     if _val not in markers_by_type_and_value[_type]:
         markers_by_type_and_value[_type][_val] = []
 
-    markers_by_type_and_value[_type][_val].append(o)
+    markers_by_type_and_value[_type][_val].append(marker)
+    #print(f"marker of type {_type=}, {_val=}, ")
 
+#print(markers)
 print(markers_by_type_and_value['col']['1'][0])
 
-col1markers_ordered =  sorted(markers_by_type_and_value['col']['1'],
-    key=lambda x: x['obj']['y']
+col1markers_ordered =  sorted(
+    markers_by_type_and_value['col']['1'],
+    key=lambda x: x['y']
+)
+
+linemarkers_ordered =  sorted(
+    markers_by_type['row'],
+    key=lambda x: x['y']
 )
 
         
-for i in col1markers_ordered:
-    print('{}/{}'.format(i['obj']['x'], i['obj']['y']))
+for i,j in enumerate(col1markers_ordered):
+    print('{}/{}'.format(j['x'], j['y']))
+    dist=99999999999999
+    thisy = j['y']
+    if i+1 == len(col1markers_ordered):
+        nexty=9999999999
+    else:
+        nexty=col1markers_ordered[i+1]['y']
+    lines = []
+    for k in linemarkers_ordered:
+        ly = k['y']
+        if ly < thisy:
+            continue
+        if ly >= nexty:
+            break
+        lines.append(k)
+    print(lines)
+
+
 
 
 
