@@ -1,6 +1,7 @@
 #! /usr/bin/env python3
 
 import random
+import secrets
 import jinja2
 import json
 import hashlib
@@ -8,6 +9,7 @@ import subprocess
 import os
 import sys
 import struct
+import lzma
 
 import configparser
 
@@ -25,36 +27,55 @@ env.filters['jsonify'] = json.dumps
 
 
 q=json.load(open('questions.json'))
+gco = 0
 
 ret = []
 
 
 PKEY_KEY = bytes.fromhex('135762ba0049cf6727b211732fdfaf202718762539d1e115dda0abeb2ab71792')
-PKEY_IV  = bytes.fromhex('7b24501c646dc54f0655f11019da68786dcc8a257faf057842d869073ce8c4d6')
 
 TMPD='/dev/shm/tmp1/'
 os.makedirs(TMPD, exist_ok=True)
 
 def grh(b):
-    #TODO use os.random or secrets
-    fh = open('/dev/urandom', 'rb')
-    c = fh.read(b)
+    c = secrets.token_bytes(b)
     return c
 
 def get_key(b):
-    h = hashlib.blake2b(b, key=PKEY_KEY, digest_size=256//8).hexdigest()
+    h = hashlib.blake2b(b, key=PKEY_KEY, digest_size=256//8).digest()
     return h
 
-def get_iv(b):
-    h = hashlib.blake2b(b, key=PKEY_IV, digest_size=96//8).hexdigest()
+def get_iv():
+    h = secrets.token_bytes(int(CFG[SECTION]['IV_LEN_BITS'])//8)
     return h
 
 
-# CHECKME separate IV's?
-def jsonify_encrypt_qrcode(obj=None, key=None, iv=None, of=None):
-    cmd=["openssl", "enc", "-chacha20", "-iv", iv, "-nosalt", "-K", key]
-    a = json.dumps(obj)
-    crypted=subprocess.run(cmd, capture_output=True, input=a.encode('utf8')).stdout
+def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
+    iv = get_iv()
+    cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
+    a = json.dumps(obj).encode('utf8')
+    zipped = lzma.compress(a)
+
+    # compressing before encryption unsafe?
+    # compressing crypted does not make sense, should be fullu random // full entropy
+
+    options = 0
+    if len(zipped) < len(a):
+        options = options | (1 << 0)
+        a = zipped
+    if init:
+        options = options | (1 << 1)
+
+    res=subprocess.run(cmd, capture_output=True, input=a)
+    crypted=res.stdout
+    bindata = bytearray()
+
+    bindata.extend(options.to_bytes(1, byteorder='big'))
+    if init:
+        bindata.extend(init)
+    bindata.extend(iv)
+    bindata.extend(crypted)
+
 
     cmd=['qrencode', 
         '-t', 'png',
@@ -62,97 +83,105 @@ def jsonify_encrypt_qrcode(obj=None, key=None, iv=None, of=None):
         '-d', '600',
         '--8bit',
         ]
-    r = subprocess.run(cmd, input=crypted, check=True, capture_output=True)
-    #print(f"running {cmd}")
+    r = subprocess.run(cmd, input=bindata, capture_output=True)
     #print(r)
     return True
+
+def gen_one_question_block(i, key=None):
+    global gco
+
+    points = i.get('points', 1)
+    tmp_latex = {
+        'q': i['q'],
+        'points': points,
+        'qr': None,
+        'a': []
+    }
+
+    tscore = []
+    for j in random.sample(i['a'], len(i['a'])):
+        tmp_latex['a'].append(j['ap'])
+
+        factor = i.get('factor', 1)
+        nofalse = i.get('nofalse')
+        points_checked = 0
+        points_unchecked = 0
+
+        if j['sol'] == True:
+            points_checked = (factor * 1)
+            points_unchecked = (factor * -1)
+            if not nofalse:
+                points_unchecked = 0
+
+        if j['sol'] == False:
+            points_checked = (factor * -1)
+            points_unchecked = (factor * 1)
+            if not nofalse:
+                points_unchecked = 0
+
+        tscore.append([points_checked, points_unchecked])
+
+    of2 = f"out/222-{gco}.png"
+    gco += 1
+    jsonify_encrypt_qrcode(obj=tscore, key=key, of=of2)
+    tmp_latex['qr'] = of2
+
+    return tmp_latex
 
 
 def doit():
 
 
-    gco = 0
+    global gco
 
     max_answers = -1
-    init=grh(16)
-    key=get_key(init)
-    iv=get_iv(init)
-    qco = 0
-
-    data = {}
-    data['answers'] = {}
-
-    qlatex = []
-    #random.seed(43123)
-    scard = []
-    for j, i in enumerate(random.sample(q, len(q))):
-
-        points = i.get('points', 1)
-
-        tmp_latex = {
-            'q': i['q'],
-            'points': points,
-            'qr': None,
-            'a': []
-        }
+    for i in q:
         nanswers = len(i['a'])
         if nanswers > max_answers:
             max_answers  = nanswers
 
-        tscore = []
-        for j in random.sample(i['a'], len(i['a'])):
-            tmp_latex['a'].append(j['ap'])
 
-            factor = i.get('factor', 1)
-            nofalse = i.get('nofalse')
-            points_checked = 0
-            points_unchecked = 0
+    basics = {}
 
-            if j['sol'] == True:
-                points_checked = (factor * 1)
-                points_unchecked = (factor * -1)
-                if not nofalse:
-                    points_unchecked = 0
+    names = ["Selabin Deresch", "Testos Teron"]
 
-            if j['sol'] == False:
-                points_checked = (factor * -1)
-                points_unchecked = (factor * 1)
-                if not nofalse:
-                    points_unchecked = 0
+    all_sheets = []
 
-            tscore.append([points_checked, points_unchecked])
 
-        of2 = f"out/222-{gco}.png"
+    for name in names:
+        init=grh(16)
+        key=get_key(init)
+
+        this_sheet = {}
+        this_sheet['name'] = name
+        this_sheet['qr'] = None
+        this_sheet['questions'] = []
+
+        
+        for j, i in enumerate(random.sample(q, len(q))):
+            tmp = gen_one_question_block(i, key=key)
+            this_sheet['questions'].append(tmp)
+
+
+
+        of2 = f'out/333-{gco}.png'
         gco += 1
-        jsonify_encrypt_qrcode(obj=tscore, key=key, iv=iv, of=of2)
-        tmp_latex['qr'] = of2
 
-        qlatex.append(tmp_latex)
+        jsonify_encrypt_qrcode(obj=this_sheet, key=key, of=of2, init=init)
+        this_sheet['qr'] = of2
+
+        all_sheets.append(this_sheet)
 
 
-    cmd=["openssl", "enc", "-chacha20", "-iv", iv, "-nosalt", "-K", key]
-    a = json.dumps(scard)
-    crypted=subprocess.run(cmd, capture_output=True, input=a.encode('utf8')).stdout
-    of='/dev/shm/a.png'
-
-    cmd=['qrencode', 
-        '-t', 'png',
-        '-o', of,
-        '-d', '600',
-        '--8bit',
-        ]
-    subprocess.run(cmd, input=crypted).stdout
-    rscore = {}
-    rscore['basics'] = {
-        'qr': of,
-        'max_answers': max_answers,
-    }
-    rscore['card'] = scard
 
     tmpl = env.get_template(CFG[SECTION]['TEMPLATE'])
-    print(json.dumps(qlatex), file=sys.stderr)
-    print(json.dumps(rscore), file=sys.stderr)
-    print(tmpl.render(qlatex=qlatex, score=rscore, cfg=CFG[SECTION], short2object=short2object['short2object']))
+    with open("a.tex", "w") as fh:
+        print(tmpl.render(
+            all_sheets=all_sheets, 
+            cfg=CFG[SECTION], 
+            short2object=short2object['short2object']),
+            file=fh
+            )
 
 
 if __name__ == "__main__":

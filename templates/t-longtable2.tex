@@ -14,7 +14,7 @@ bottom=15mm,
 \usepackage{amsfonts}
 \parindent0mm
 
-\begin{document}
+
 
 {% macro april(sid) %}
         \noindent\parbox[c][4mm][c]{4mm}{
@@ -23,67 +23,73 @@ bottom=15mm,
             }
         
 {% endmacro %}
-{% set ma = score['basics']['max_answers'] %}
-{% set mac = ma + 2 %}
+\begin{document}
 
-\begin{tabular}{l l l}
+{% for sheet in all_sheets %}
 
-\large Name &  \large Unterschrift &
-    \multirow{2}{*}{
-        \includegraphics[width=4cm]{{ '{'}}{{ score.basics.qr }}}
-    } 
-\\
-\\
-
-\hspace{ .3\textwidth } & \hspace{ .3\textwidth}  \\
-
-\\
-
-\multicolumn{ 2 }{ p{.7\textwidth} }{
-Hinweise:
-
-alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
-
-Zum korrigieren verwenden Sie die naechste Zeile der gleichen Frage.
-
-Ist eine weiter Zeile ausgefuellt, sind alle darueberliegenden Zeilen der gleichen Frage ungueltig.
-} \\
-\end{tabular}
-
-
-
-{% for i in qlatex %}
+    \begin{tabular}{l l l}
     
-
-    \section*{ {{ i.q }}\hfill({{i.points}}P)} 
-
-    \begin{minipage}{.8\textwidth}
-        \begin{tabularx}{\textwidth}{l | c c c | c}
-            {% for jj in range(3) %}
-              & {{ april("col." + jj | string ) }}
-            {% endfor %}
-            \\
-            
-            {% for j in i.a %}
-                {{ j }} 
-                {% for i in range(3) %}
-                    & $\square$
-                {%- endfor %}
-                & {{ april("row." + loop.index | string ) }}
+    \large {{ sheet.name}} &  \large Unterschrift &
+        \multirow{2}{*}{
+            \includegraphics[width=4cm]{{ '{'}}{{ sheet.qr }}}
+        } 
+    \\
+    \\
+    
+    \hspace{ .3\textwidth } & \hspace{ .3\textwidth}  \\
+    
+    \\
+    
+    \multicolumn{ 2 }{ p{.7\textwidth} }{
+    Hinweise:
+    
+    alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
+    
+    Zum korrigieren verwenden Sie die naechste Spalte der gleichen Frage.
+    
+    Ist eine Spalte ausgefuellt, sind alle davorliegenden Spalten der gleichen Frage ungueltig.
+    
+    Die Barcodes und Marker duerfen nicht veraendert werden.
+    
+    
+    
+    } \\
+    \end{tabular}
+    
+    
+    
+    {% for i in sheet.questions %}
+        
+    
+        \section*{ {{ i.q }}\hfill({{i.points}}P)} 
+    
+        \begin{minipage}{.8\textwidth}
+            \begin{tabularx}{\textwidth}{r | c c c | c}
+                {% for jj in range(3) %}
+                  & {{ april("col." + jj | string ) }}
+                {% endfor %}
                 \\
-            {% endfor %}
-        \end{tabularx}
-    \end{minipage}
-    \begin{minipage}{.1\textwidth}
-        \includegraphics[width=2cm]{{ '{'}}{{ i.qr }}}
-    \end{minipage}
-
-
-
+                
+                {% for j in i.a %}
+                    {{ j }} 
+                    {% for i in range(3) %}
+                        & $\square$
+                    {%- endfor %}
+                    & {{ april("row." + loop.index | string ) }}
+                    \\
+                {% endfor %}
+            \end{tabularx}
+        \end{minipage}
+        \begin{minipage}{.1\textwidth}
+            \includegraphics[width=25mm]{{ '{'}}{{ i.qr }}}
+        \end{minipage}
+    
+    
+    
+    {% endfor %}
+    
+    \cleardoublepage
+    
 {% endfor %}
-
-Ende des Bogens.
-
-\cleardoublepage
 
 \end{document}
