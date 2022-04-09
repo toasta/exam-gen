@@ -15,8 +15,8 @@ import numpy as np
 _img = Image.open(sys.argv[1])
 
 c_red = ImageColor.getrgb("#ff0000a0")
-c_blue = ImageColor.getrgb("#00ff00a0")
-c_green = ImageColor.getrgb("#0000ffa0")
+c_green = ImageColor.getrgb("#00ff00a0")
+c_blue = ImageColor.getrgb("#0000ffa0")
 
 diag1 = _img.copy().convert(mode="RGBA")
 diag1_draw = ImageDraw.Draw(diag1)
@@ -49,7 +49,8 @@ det = dt_apriltags.Detector(
     families='tag16h5',
     nthreads=2,
     quad_decimate = 1.0,
-    decode_sharpening = 0.25
+    decode_sharpening = 0.5,
+    quad_sigma = 0.5,
 )
 
 detections = det.detect(img)
@@ -76,7 +77,8 @@ for i in detections:
     x = int(center[0])
     y = int(center[1])
 
-    diag1_draw.regular_polygon((x, y, 9), n_sides=3, outline=c_blue)
+    for r in range(6,9): 
+        diag1_draw.regular_polygon((x, y, r), n_sides=3, outline=c_blue)
 
     marker = {'tag_id': tag_id, 'x': x, 'y':y, 'o': o}
     markers.append(marker)
