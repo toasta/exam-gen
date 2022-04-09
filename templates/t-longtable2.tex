@@ -17,9 +17,9 @@ bottom=15mm,
 
 
 {% macro april(sid) %}
-        \noindent\parbox[c][4mm][c]{4mm}{
+        \noindent\parbox[c][5mm][c]{5mm}{
             \centering
-            \includegraphics[width=3mm]{{ '{'}}{{  short2object[sid].fn }}}
+            \includegraphics[width=4mm]{{ '{'}}{{  short2object[sid].fn }}}
             }
         
 {% endmacro %}
@@ -69,6 +69,12 @@ bottom=15mm,
                   & {{ april("col." + jj | string ) }}
                 {% endfor %}
                 \\
+
+                {% for jj in range(3) %}
+                        & $\square$
+                {% endfor %}
+                \\
+                \cline{2-4}
                 
                 {% for j in i.a %}
                     {{ j }} 
@@ -78,6 +84,7 @@ bottom=15mm,
                     & {{ april("row." + loop.index | string ) }}
                     \\
                 {% endfor %}
+                \cline{2-4}
             \end{tabularx}
         \end{minipage}
         \begin{minipage}{.1\textwidth}

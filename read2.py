@@ -1,20 +1,34 @@
 #! /usr/bin/env python3
 
-
-
-
 import sys
 import json
 from pyzbar import pyzbar
 
+from PIL import Image, ImageDraw, ImageColor, ImageOps
+
 
 import dt_apriltags
-import cv2
+#import cv2
 import numpy as np
 
-img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
+#img = cv2.imread(sys.argv[1], cv2.IMREAD_GRAYSCALE)
+_img = Image.open(sys.argv[1])
 
-if 1==0:
+c_red = ImageColor.getrgb("#ff0000a0")
+c_blue = ImageColor.getrgb("#00ff00a0")
+c_green = ImageColor.getrgb("#0000ffa0")
+
+diag1 = _img.copy().convert(mode="RGBA")
+diag1_draw = ImageDraw.Draw(diag1)
+
+img = ImageOps.autocontrast(
+        ImageOps.grayscale(
+        _img
+        ))
+
+img = np.array(img)
+
+if 1==1:
     barcodes = pyzbar.decode(img)
 
 
@@ -33,8 +47,9 @@ if 1==0:
 
 det = dt_apriltags.Detector(
     families='tag16h5',
+    nthreads=2,
     quad_decimate = 1.0,
-    decode_sharpening = 0
+    decode_sharpening = 0.25
 )
 
 detections = det.detect(img)
@@ -58,7 +73,12 @@ for i in detections:
     o = id2object[str(tag_id)]
     _type = o['what']
     _val = str(o['val'])
-    marker = {'tag_id': tag_id, 'x': int(center[0]), 'y': int(center[1]), 'o': o}
+    x = int(center[0])
+    y = int(center[1])
+
+    diag1_draw.regular_polygon((x, y, 9), n_sides=3, outline=c_blue)
+
+    marker = {'tag_id': tag_id, 'x': x, 'y':y, 'o': o}
     markers.append(marker)
 
     if _type not in markers_by_type:
@@ -77,11 +97,20 @@ for i in detections:
     #print(f"marker of type {_type=}, {_val=}, ")
 
 #print(markers)
-print(markers_by_type_and_value['col']['1'][0])
+#print(markers_by_type_and_value['col']['1'][0])
 
 col1markers_ordered =  sorted(
     markers_by_type_and_value['col']['1'],
     key=lambda x: x['y']
+)
+col2markers_ordered_x =  sorted(
+    markers_by_type_and_value['col']['1'],
+    key=lambda x: x['x']
+)
+
+col3markers_ordered_x =  sorted(
+    markers_by_type_and_value['col']['1'],
+    key=lambda x: x['x']
 )
 
 linemarkers_ordered =  sorted(
@@ -89,16 +118,22 @@ linemarkers_ordered =  sorted(
     key=lambda x: x['y']
 )
 
+
         
 for i,j in enumerate(col1markers_ordered):
-    print('{}/{}'.format(j['x'], j['y']))
+    #print('{}/{}'.format(j['x'], j['y']))
     dist=99999999999999
     thisy = j['y']
+    thisx = j['x']
+    cols=[]
+    cols.append(j)
+    lines = []
+
     if i+1 == len(col1markers_ordered):
         nexty=9999999999
     else:
         nexty=col1markers_ordered[i+1]['y']
-    lines = []
+
     for k in linemarkers_ordered:
         ly = k['y']
         if ly < thisy:
@@ -106,61 +141,54 @@ for i,j in enumerate(col1markers_ordered):
         if ly >= nexty:
             break
         lines.append(k)
-    print(lines)
 
+    for k in col2markers_ordered_x:
+        if abs(k['y'] - thisy) < 10:
+            cols.append(k)
 
+    for k in col3markers_ordered_x:
+        if abs(k['y'] - thisy) < 10:
+            cols.append(k)
 
+    # get the corresponding qr code
+    this_qr = None
 
+    for k in qqr:
+        thaty = k['y']
+        if thaty >= cols[0]['y'] and thaty <= lines[-1]['y']:
+            this_qr = k
+            break
+    assert(this_qr)
 
+    print('qr at ({} {}) is between col0 w/ y {} and last line y {}'.format(
+        this_qr['x'], this_qr['y'],
+        cols[0]['y'], lines[-1]['y']
+        ))
 
+    # start from the highest col, if ever
+    # FIXME - does not work for questions with no correct answer
+    # and even if he want's to have this column rated....
+    square = 20
+    for k in range(3):
+        (rx, ry) = (cols[k]['x'], cols[k]['y'])
+        for l in lines:
+            (lx, ly) = (l['x'], l['y'])
+            (mx, my) = (rx, ly)
+            #print(f'center ({mx} {my}) .. {c_green=}')
+            diag1_draw.ellipse([
+                mx+square/-2, my+square/-2,
+                mx+square/2, my+square/2
+                ], fill=c_green)
 
-# https://stackoverflow.com/questions/3252194/numpy-and-line-intersections
-def get_intersect(a1, a2, b1, b2):
-    """
-    Returns the point of intersection of the lines passing through a2,a1 and b2,b1.
-    a1: [x, y] a point on the first line
-    a2: [x, y] another point on the first line
-    b1: [x, y] a point on the second line
-    b2: [x, y] another point on the second line
-    """
-    s = np.vstack([a1,a2,b1,b2])        # s for stacked
-    h = np.hstack((s, np.ones((4, 1)))) # h for homogeneous
-    l1 = np.cross(h[0], h[1])           # get first line
-    l2 = np.cross(h[2], h[3])           # get second line
-    x, y, z = np.cross(l1, l2)          # point of intersection
-    if z == 0:                          # lines are parallel
-        return (float('inf'), float('inf'))
-    return (x/z, y/z)
-
-
-def do_count():
-    square = 22
-
-
-    for line in range(8):
-        for row in range(2,5):
-            if row not in res['row'].keys():
-                continue
-            if line not in res['line'].keys():
-                continue
-
-            rep=0
-
-            isect = get_intersect(
-                res['row'][row]['end'],
-                res['row'][row]['begin'],
-                res['line'][line][rep]['end'],
-                res['line'][line][rep]['begin'],
-                )
-
-            # TODO --- add empty lines so we can get 'gray average value' of just the square (227 here)
-
-            # opencv/numpy y x 
+                
             avg = int(np.average(img[
-                int(isect[1]+square/-2):int(isect[1]+square/2),
-                int(isect[0]+square/-2):int(isect[0]+square/2),
-                ]))
+                    int(my+square/-2):int(my+square/2),
+                    int(mx+square/-2):int(mx+square/2),
+                    ]))
             checked=False
             if avg < 200:
                 checked=True
-            print(f'{line+1=}, {rep+1=}, {row+1=}, {avg=}, {checked=}')
+            print(f'{checked}')
+    diag1.save("foo33.png")
+
+
