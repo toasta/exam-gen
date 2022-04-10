@@ -54,46 +54,51 @@ bottom=15mm,
     \end{tabular}
     
     
-    %\begin{multicols}{2}
+    \begin{multicols}{2}
     
     {% for i in sheet.questions %}
+    %\begin{tabularx}{\textwidth}{X r | c c c | c | c}
+    
+    \begin{tabularx}{\textwidth}{ p{50mm} r c c c c c}
+    \hline
         
+        \multirow{ {{ i.a | length +3  }} }{50mm}
+        {
+            \textbf{ {{ i.q }} ({{i.points}}P)} 
+        }
     
-        \section*{ {{ i.q }}\hfill({{i.points}}P)} 
-    
-        \begin{minipage}{.8\textwidth}
-            \begin{tabularx}{\textwidth}{r | c c c | c}
+    &
                 {% for jj in range(3) %}
                     & $\Cap$
                 {% endfor %}
-                \\
+            
+
+        \\
+        &
+        
 
                 {% for jj in range(3) %}
                         & $\square$
                 {% endfor %}
+
                 \\
-                \cline{2-4}
+                
                 
                 {% for j in i.a %}
-                    {{ j }} 
+                    & {{ j }} 
                     {% for i in range(3) %}
                         & $\square$
                     {%- endfor %}
                     & $\Supset$
                     \\
                 {% endfor %}
-                \cline{2-4}
-            \end{tabularx}
-        \end{minipage}
-        \begin{minipage}{.1\textwidth}
-            \includegraphics[width=20mm]{{ '{'}}{{ i.qr }}}
-        \end{minipage}
     
     
-    
+    \end{tabularx}
     {% endfor %}
-    %\end{multicols}
-    
+    } % multicol
+
+
     \cleardoublepage
     
 {% endfor %}
