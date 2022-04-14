@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[20pt]{extarticle}
 
 \usepackage{geometry}
 \usepackage{longtable}
@@ -24,7 +24,11 @@ bottom=15mm,
 
 {% for sheet in all_sheets %}
 
-    \begin{minipage}{.7\textwidth}
+
+\iffalse
+{{ sheet.json_readable }}
+\fi
+
     { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
 
     Hinweise:
@@ -38,48 +42,60 @@ bottom=15mm,
     Die Barcodes und Marker duerfen nicht veraendert werden.
     Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
     
-        \end{minipage}
-        \begin{minipage}{50mm}
-\includegraphics[width=5cm]{{ '{'}}{{ sheet.qr }}}
-        \end{minipage}
-    
-    
+
+\includegraphics[width=\textwidth]{{ '{'}}{{ sheet.qr }}}
+
+
+    %\begin{multicols*}{2}{
     
     {% for i in sheet.questions %}
-    \begin{minipage}{25mm}
-            \includegraphics[width=25mm]{{ '{'}}{{i.qr}}}
+    {% if not loop.first %}
+        \vspace{8mm}
+    {% endif %}
+
+    % samepage doesnt do
+    \noindent\begin{minipage}{\linewidth}
+    \begin{minipage}{.3\textwidth}
+    \textbf{\noindent {{ i.q }}}\hfill ({{i.points}}P) 
+    \\
+
+
+    \includegraphics[width=20mm]{common/numbers/{{ loop.index }}}
     \end{minipage}
-    \begin{minipage}{.4\textwidth}
-            \noindent\textbf{\noindent {{ i.q }} ({{i.points}})} 
-    \end{minipage}
-    \begin{tabularx}{\textwidth}{ r | c c c | c}
-        
-    
+    %\begin{tabularx}{\textwidth}{ r | c c c | c }
+    \begin{tabular}{ r | c c c | c }
+
+
                 {% for jj in range(3) %}
-                    & $\Cap$
+                    & \includegraphics[width=1em]{common/m3}
                 {% endfor %}
         \\
-        
-                {% for jj in range(3) %}
+            &
+            $\boxtimes$
+                {% for jj in range(2) %}
                         & $\square$
                 {% endfor %}
+        & \vspace{2.5mm}
 
         \\
-                
                 {% for j in i.a %}
                      {{ j }} 
                     {% for i in range(3) %}
                         & $\square$
                     {%- endfor %}
-                    & $\Supset$
+                    & 
+                    %\noindent\parbox[c]{\hsize}{
+                     \includegraphics[width=1em]{common/m2}
+                    %}
                     \\
                 {% endfor %}
     
     
-    \end{tabularx}
+    \end{tabular}
+    \end{minipage} % samepage minipage
     {% endfor %}
 
-
+    %} \end{multicols*}
 
     \cleardoublepage
     

@@ -53,28 +53,32 @@ def get_iv():
 def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
     iv = get_iv()
     cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
-    a = json.dumps(obj).encode('utf8')
-    zipped = lzma.compress(a)
+    _a = json.dumps(obj)
+    a = _a.encode('utf8')
 
     # compressing before encryption unsafe?
     # compressing crypted does not make sense, should be fullu random // full entropy
 
     options = 0
+
+    zipped = lzma.compress(a)
+
     if len(zipped) < len(a):
+        print(f"lzma size {len(zipped)} < {len(a)}, using compressed form; {len(zipped)/len(a)}")
         options = options | (1 << 0)
         a = zipped
-    if init:
-        options = options | (1 << 1)
 
     res=subprocess.run(cmd, capture_output=True, input=a)
     crypted=res.stdout
+
     bindata = bytearray()
 
     bindata.extend(options.to_bytes(1, byteorder='big'))
-    if init:
-        bindata.extend(init)
+    bindata.extend(init)
     bindata.extend(iv)
     bindata.extend(crypted)
+
+    print(a)
 
 
     cmd=['qrencode', 
@@ -88,7 +92,6 @@ def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
     return True
 
 def gen_one_question_block(i, key=None):
-    global gco
 
     points = i.get('points', 1)
     tmp_latex = {
@@ -102,29 +105,30 @@ def gen_one_question_block(i, key=None):
     for j in random.sample(i['a'], len(i['a'])):
         tmp_latex['a'].append(j['ap'])
 
-        factor = i.get('factor', 1)
-        nofalse = i.get('nofalse')
+        factor = j.get('factor', 1)
+        nofalse = j.get('nofalse', False)
         points_checked = 0
         points_unchecked = 0
 
+        # FIXME -- something wrong w/ points_unchecked
         if j['sol'] == True:
-            points_checked = (factor * 1)
-            points_unchecked = (factor * -1)
+            points_checked      = (factor * +1)
+            points_unchecked    = 0
             if not nofalse:
                 points_unchecked = 0
 
         if j['sol'] == False:
-            points_checked = (factor * -1)
-            points_unchecked = (factor * 1)
+            points_checked      = (factor * -1)
+            points_unchecked    = 0
             if not nofalse:
                 points_unchecked = 0
 
         tscore.append([points_checked, points_unchecked])
 
-    of2 = f"out/222-{gco}.png"
-    gco += 1
-    jsonify_encrypt_qrcode(obj=tscore, key=key, of=of2)
-    tmp_latex['qr'] = of2
+    #of2 = f"out/222-{gco}.png"
+    #gco += 1
+    #jsonify_encrypt_qrcode(obj=tscore, key=key, of=of2)
+    tmp_latex['solution'] = tscore
 
     return tmp_latex
 
@@ -169,6 +173,8 @@ def doit():
 
         jsonify_encrypt_qrcode(obj=this_sheet, key=key, of=of2, init=init)
         this_sheet['qr'] = of2
+        _a = json.dumps(this_sheet, indent=1)
+        this_sheet['json_readable'] = _a
 
         all_sheets.append(this_sheet)
 
