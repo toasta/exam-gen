@@ -2,4 +2,7 @@
 
 set -x 
 
-convert -density 300 out/a.pdf -background white -alpha remove process/t.tiff
+convert -density 200 out/a.pdf \
+    -background white -alpha remove \
+    -rotate 1 \
+    process/t.tiff
