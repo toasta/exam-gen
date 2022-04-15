@@ -27,6 +27,7 @@ mark_width  = int(mark_width.rstrip('m'))
 
 
 sheet_f = "process/t.tiff"
+sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
 
 
 colors = [None for i in range(4)]
@@ -37,7 +38,6 @@ colors[3] = (255, 255,0)
 
 
 
-sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
 
 barcodes = pyzbar.decode(sheet)
 assert(len(barcodes) == 1)
@@ -56,17 +56,21 @@ tmp = None
 for i in range(4):
     #print(f'{i=}')
     t= cv2.imread(f'common/out/{i}.png', cv2.IMREAD_GRAYSCALE)
+
+    # why is this reversed?
     t=(255 - t)
-    if tmp is None:
-        tmp = t
-        cv2.imwrite(f'foo.png', t)
-    #print(t)
+
     marker[i] = cv2.resize(t, rs, interpolation = cv2.INTER_NEAREST)
 
-print(f"scaled marker {rs=}, {tmp.shape}")
-print(tmp)
+    if i == 0:
+        tmp = t
+        cv2.imwrite(f'foo.png', t)
+        cv2.imwrite(f'foo2.png', marker[i])
+    #print(t)
 
-if 1==0: 
+#print(f"scaled marker {rs=}, {tmp.shape}")
+
+if 1 == 0: 
     with np.printoptions(threshold=np.inf):
         print(marker[0])
 
@@ -75,28 +79,34 @@ sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 match_method = cv2.TM_SQDIFF
 match_method = cv2.TM_SQDIFF_NORMED
 match_method = cv2.TM_CCOEFF_NORMED
+match_method = cv2.TM_CCORR_NORMED
 
-def match_template(img, marker, threshold):
+def match_template(img, marker, threshold, return_res=False):
     res = cv2.matchTemplate(img, marker, match_method)
+    if return_res:
+        return res
     loc = np.where(res > threshold)
     return loc
 
 
 matches = [None for i in range(4)]
 cutoff=None
+cutoff_limit=.6
 #for j in range(100):
+t=match_template(sheet, marker[3], match_method, return_res=True)
 for j in range(100):
-    cutoff = (71-j) / 100
-    t=match_template(sheet, marker[3], match_method)
-    nmarkers = len(t[0])
-    print(f"trying w/ {cutoff=} => {nmarkers=}")
-    if len(t[0]) == 3:
+    cutoff = (100-j) / 100
+
+    if cutoff < cutoff_limit:
+        print(f"{cutoff=} < {cutoff_limit=}. something wrong. cowardly exiting")
+        sys.exit(1)
+    loc = np.where(t > cutoff)
+    nmarkers = len(loc[0])
+    print(f"{cutoff=} => {nmarkers=}")
+    # should be exactly thre.....
+    if nmarkers >= 3:
         break
 
-cutoff_limit=.6
-if cutoff < cutoff_limit:
-    print(f"{cutoff=} < {cutoff_limit=}. something wrong. cowardly exiting")
-    sys.exit(1)
 
 print(f'running w/ {cutoff=}')
 
