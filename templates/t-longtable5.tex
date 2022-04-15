@@ -1,0 +1,95 @@
+\documentclass{extarticle}
+
+\usepackage{geometry}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tabularx}
+\geometry{
+a4paper,
+left=15mm,
+right=15mm,
+top=15mm,
+bottom=15mm,
+}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\parindent0mm
+
+
+
+
+\begin{document}
+
+{% for sheet in all_sheets %}
+
+
+\iffalse
+{{ sheet.json_readable }}
+\fi
+
+{% set twidth=0.7 %}
+{% set qwidth=1-twidth %} 
+
+\begin{minipage}{ {{ twidth }}\textwidth}
+
+    { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
+
+    Hinweise:
+    
+    alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
+    
+    Zum korrigieren verwenden Sie die naechste Spalte der gleichen Frage und kreuzen diese Spalte an.
+    
+    
+    
+    Die Barcodes und Marker duerfen nicht veraendert werden.
+    Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
+\end{minipage}
+\begin{minipage}{ {{ qwidth }}\textwidth}
+\includegraphics[width=\textwidth]{{ '{'}}{{ sheet.qr }}}
+\end{minipage}
+
+
+\begin{longtable}{p{.5\textwidth} c c c c c c }
+
+    {% for jj in range(3) %}
+        & \includegraphics[width=1em]{common/m3}
+    {% endfor %}
+    \endhead
+    
+    {% for i in sheet.questions %}
+
+    \multicolumn{4}{c}{
+        \textbf{\noindent {{ i.q }}}\hfill ({{i.points}}P) 
+        \newline
+        \includegraphics[width=20mm]{common/numbers/{{ loop.index }}}
+    }
+    \\
+            &
+            $\boxtimes$
+                {% for jj in range(2) %}
+                        & $\square$
+                {% endfor %}
+        \\
+                {% for j in i.a %}
+                     {{ j }} 
+                    {% for i in range(3) %}
+                        & $\square$
+                    {%- endfor %}
+                    & 
+                    %\noindent\parbox[c]{\hsize}{
+                     \includegraphics[width=1em]{common/m2}
+                    %}
+                    \\
+                {% endfor %}
+    {% endfor %}
+    \end{longtable}
+
+
+    \cleardoublepage
+    
+{% endfor %}
+
+\end{document}
