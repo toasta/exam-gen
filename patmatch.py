@@ -58,7 +58,8 @@ for i in range(4):
     t= cv2.imread(f'common/out/{i}.png', cv2.IMREAD_GRAYSCALE)
 
     # why is this reversed?
-    t=(255 - t)
+    # daaaa.. it is not!!!
+    #t=(255 - t)
 
     marker[i] = cv2.resize(t, rs, interpolation = cv2.INTER_NEAREST)
 
