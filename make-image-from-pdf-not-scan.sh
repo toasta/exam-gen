@@ -1,1 +1,1 @@
-convert -density 120 a.pdf -background white -alpha remove test/t.png
+convert -density 300 out/a.pdf -background white -alpha remove process/t.tiff

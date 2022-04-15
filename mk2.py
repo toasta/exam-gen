@@ -27,7 +27,6 @@ env.filters['jsonify'] = json.dumps
 
 
 q=json.load(open('questions.json'))
-gco = 0
 
 ret = []
 
@@ -125,9 +124,6 @@ def gen_one_question_block(i, key=None):
 
         tscore.append([points_checked, points_unchecked])
 
-    #of2 = f"out/222-{gco}.png"
-    #gco += 1
-    #jsonify_encrypt_qrcode(obj=tscore, key=key, of=of2)
     tmp_latex['solution'] = tscore
 
     return tmp_latex
@@ -136,7 +132,6 @@ def gen_one_question_block(i, key=None):
 def doit():
 
 
-    global gco
 
     max_answers = -1
     for i in q:
@@ -168,8 +163,7 @@ def doit():
 
 
 
-        of2 = f'out/333-{gco}.png'
-        gco += 1
+        of2 = f'out/bc.png'
 
         jsonify_encrypt_qrcode(obj=this_sheet, key=key, of=of2, init=init)
         this_sheet['qr'] = of2
