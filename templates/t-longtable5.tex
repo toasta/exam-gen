@@ -29,10 +29,10 @@ bottom=15mm,
 {{ sheet.json_readable }}
 \fi
 
+{% set qwidth='5cm' %} 
 {% set twidth=0.7 %}
-{% set qwidth=1-twidth %} 
 
-\begin{minipage}{ {{ twidth }}\textwidth}
+\begin{minipage}{ {{ 1 }}\textwidth}
 
     { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
 
@@ -47,7 +47,7 @@ bottom=15mm,
     Die Barcodes und Marker duerfen nicht veraendert werden.
     Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
 \end{minipage}
-\begin{minipage}{ {{ qwidth }}\textwidth}
+\begin{minipage}{ {{ qwidth }} }
 \includegraphics[width=\textwidth]{{ '{'}}{{ sheet.qr }}}
 \end{minipage}
 
