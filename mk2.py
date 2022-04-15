@@ -172,6 +172,9 @@ def doit():
 
         all_sheets.append(this_sheet)
 
+    common = {}
+    common['marker_width'] = CFG[SECTION]['MARKER_WIDTH']
+    common['main_qr_width'] = CFG[SECTION]['MAIN_QR_WIDTH']
 
 
     tmpl = env.get_template(CFG[SECTION]['TEMPLATE'])
@@ -179,7 +182,9 @@ def doit():
         print(tmpl.render(
             all_sheets=all_sheets, 
             cfg=CFG[SECTION], 
-            short2object=short2object['short2object']),
+            short2object=short2object['short2object'],
+            common=common,
+            ),
             file=fh
             )
 

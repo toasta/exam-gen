@@ -2,6 +2,7 @@
 
 \usepackage{geometry}
 \usepackage{longtable}
+\usepackage{calc}
 \usepackage{multirow}
 \usepackage{multicol}
 \usepackage{tabularx}
@@ -32,7 +33,7 @@ bottom=15mm,
 {% set qwidth='5cm' %} 
 {% set twidth=0.7 %}
 
-\begin{minipage}{ {{ 1 }}\textwidth}
+\begin{minipage}{ \textwidth - {{common.main_qr_width}} - 1em }
 
     { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
 
@@ -47,15 +48,19 @@ bottom=15mm,
     Die Barcodes und Marker duerfen nicht veraendert werden.
     Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
 \end{minipage}
-\begin{minipage}{ {{ qwidth }} }
+\begin{minipage}{ {{ common.main_qr_width }} }
 \includegraphics[width=\textwidth]{{ '{'}}{{ sheet.qr }}}
 \end{minipage}
+
+{% macro marker(num) %}
+    \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
+{% endmacro %}
 
 
 \begin{longtable}{r |  c c c | l }
 
     {% for jj in range(3) %}
-        & \includegraphics[width=1em]{common/m3}
+        & {{ marker(0) }}
     {% endfor %}
     \endhead
     
@@ -70,22 +75,22 @@ bottom=15mm,
     }
 
     \\*
-    \includegraphics[width=1em]{common/m4}
+    {{ marker(2) }}
             &
             $\boxtimes$
                 {% for jj in range(2) %}
                         & $\square$
                 {% endfor %}
-                     & \includegraphics[width=1em]{common/m2}
+                    & {{ marker(1) }}
         \\*
                 {% for j in i.a %}
                      {{ j }} 
                     {% for i in range(3) %}
                         & $\square$
                     {%- endfor %}
-                     & \includegraphics[width=1em]{common/m2}
+                    & {{ marker(2) }}
                      {% if loop.last %}
-                        \includegraphics[width=1em]{common/m4}
+                        {{ marker(3) }}
                      {% endif %}
                     \\*
                 {% endfor %}

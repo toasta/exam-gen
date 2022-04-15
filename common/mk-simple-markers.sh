@@ -26,9 +26,9 @@ for i in 1 2 ; do
         echo -n " -draw 'point $(( $PX + $i)),$(( $PY + $j))'"
     done
 done
-echo -n " out/$NN.tiff"
+echo -n " out/$NN.png"
 echo
-echo "convert out/$NN.tiff -border 2 -scale 1000% out/${NN}_1000.tiff"
+echo "convert out/$NN.png -border 2 -scale 1000% out/${NN}_1000.png"
 }
 
 mkdir -p out/
