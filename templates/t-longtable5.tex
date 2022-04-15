@@ -57,7 +57,7 @@ bottom=15mm,
 {% endmacro %}
 
 
-\begin{longtable}{r |  c c c | l }
+\begin{longtable}[l]{r |  c c c | l }
 
     {% for jj in range(3) %}
         & {{ marker(0) }}
@@ -65,34 +65,40 @@ bottom=15mm,
     \endhead
     
     {% for i in sheet.questions %}
-
-    {% if not loop.first %}
-    \\
-    {% endif %}
-
-    \multicolumn{5}{l}{
-        ({{i.points}}P) \textbf{\noindent {{ i.q }}}
-    }
-
-    \\*
-    {{ marker(2) }}
+        \multicolumn{5}{l}{}
+        \\
+        \multicolumn{5}{l}{
+            ({{i.points}}P) \textbf{ {{ i.q }}}
+        }
+        \\*
+        \multicolumn{5}{l}{}
+        \\*
+        {{ marker(1) }}
             &
             $\boxtimes$
+
                 {% for jj in range(2) %}
                         & $\square$
                 {% endfor %}
-                    & {{ marker(1) }}
-        \\*
+
+                    & {{ marker(2) }}
+                    \\*
+
                 {% for j in i.a %}
                      {{ j }} 
+
                     {% for i in range(3) %}
                         & $\square$
                     {%- endfor %}
+
                     & {{ marker(2) }}
+
                      {% if loop.last %}
-                        {{ marker(3) }}
-                     {% endif %}
+                        {{ marker(3) }} \\
+                     {% else %}
                     \\*
+                     {% endif %}
+
                 {% endfor %}
     {% endfor %}
     \end{longtable}
