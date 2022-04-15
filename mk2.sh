@@ -1,6 +1,8 @@
 #! /bin/bash
 
+PDFL="pdflatex -output-directory out/"
+
 _venv/bin/python mk2.py && \
-    pdflatex a.tex && \
-    pdflatex a.tex && \
-    pdflatex a.tex
+    $PDFL a.tex && \
+    $PDFL a.tex && \
+    $PDFL a.tex
