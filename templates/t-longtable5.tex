@@ -52,7 +52,7 @@ bottom=15mm,
 \end{minipage}
 
 
-\begin{longtable}{p{.5\textwidth} c c c c c c }
+\begin{longtable}{r |  c c c | c c}
 
     {% for jj in range(3) %}
         & \includegraphics[width=1em]{common/m3}
@@ -61,29 +61,31 @@ bottom=15mm,
     
     {% for i in sheet.questions %}
 
-    \multicolumn{4}{c}{
-        \textbf{\noindent {{ i.q }}}\hfill ({{i.points}}P) 
-        \newline
-        \includegraphics[width=20mm]{common/numbers/{{ loop.index }}}
+    \multicolumn{5}{l}{
+    \includegraphics[width=1em]{common/m4}
+        ({{i.points}}P) \textbf{\noindent {{ i.q }}}
     }
-    \\
+
+        \vspace{2em}
+    \\*
             &
             $\boxtimes$
                 {% for jj in range(2) %}
                         & $\square$
                 {% endfor %}
-        \\
+                     & \includegraphics[width=1em]{common/m2}
+        \\*
                 {% for j in i.a %}
                      {{ j }} 
                     {% for i in range(3) %}
                         & $\square$
                     {%- endfor %}
-                    & 
-                    %\noindent\parbox[c]{\hsize}{
-                     \includegraphics[width=1em]{common/m2}
-                    %}
-                    \\
+                     & \includegraphics[width=1em]{common/m2}
+                    \\*
                 {% endfor %}
+                & & & &
+                    {\includegraphics[width=1em]{common/m4}}
+                    \\*
     {% endfor %}
     \end{longtable}
 
