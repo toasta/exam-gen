@@ -51,7 +51,7 @@ x, y , w, h = barcode.rect
 center = (int(x+w/2), int(y+h/2))
 pxpmm = w/mqr_width
 print(f'found qrcode @ {x}/{y} w/ width = {w} px; {mqr_width} => {pxpmm} px/mm')
-print(f'poly {barcode.polygon}, orientation {barcode.orientation}')
+#print(f'poly {barcode.polygon}, orientation {barcode.orientation}')
 
 
 # polygon=[Point(x=1706, y=281), Point(x=1708, y=829), Point(x=2253, y=827), Point(x=2253, y=283)], quality=1, orientation='UP')
@@ -65,39 +65,48 @@ dst_pos = []
 # 1 bottom right
 # 2 bottom left
 # 3 top left
-if 1==1:
+if 1==0:
     for i,_p in enumerate(barcode.polygon):
         p = (_p.x, _p.y)
         cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
         cv2.circle(sheet_debug, (200, 300+i*40), radius=10, color=colors[i], thickness=2)
-        print(f'i is {i}, color is {colors[i]}')
+        #print(f'i is {i}, color is {colors[i]}')
     cv2.imwrite("sheet_debug.png", sheet_debug)
 
-p0 = barcode.polygon[0]
-p1 = barcode.polygon[1]
-p2 = barcode.polygon[2]
-p3 = barcode.polygon[3]
+def getpos(polys):
+    tmp2 = sorted(polys, key=lambda x: x.y)
+    (p0, p1) = sorted(tmp2[:2], key=lambda x: x.x)
 
+    tmp2 = tmp2[2:]
+    # simple if would be enough
+    tmp2 = sorted(tmp2, key=lambda x: -x.x)
+
+    (p2, p3) = tmp2
+
+    return (p0, p1, p2, p3)
+
+(p0, p1, p2, p3) = getpos(barcode.polygon)
 
 
 # "fix"
-src_pos.append( (p3.x, p3.y) )
-dst_pos.append( (p3.x, p3.y) )
-
 src_pos.append( (p0.x, p0.y) )
-dst_pos.append( (p3.x, p0.y) )
-
-src_pos.append( (p2.x, p2.y) )
-dst_pos.append( (p2.x, p3.y) )
+dst_pos.append( (p0.x, p0.y) )
 
 src_pos.append( (p1.x, p1.y) )
-dst_pos.append( (p2.x, p0.y) )
+dst_pos.append( (p1.x, p0.y) )
+
+src_pos.append( (p2.x, p2.y) )
+dst_pos.append( (p1.x, p2.y) )
+
+src_pos.append( (p3.x, p3.y) )
+dst_pos.append( (p0.x, p3.y) )
 
 
 print(f'making homo w/\n{src_pos=}\n{dst_pos=}')
 
 (homo, status) = cv2.findHomography(np.array(src_pos), np.array(dst_pos))
 print(homo, status)
+
 
 cv2.imwrite("debug-pre-homo.png", sheet)
 sheet = cv2.warpPerspective(
