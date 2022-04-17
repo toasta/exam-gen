@@ -1,6 +1,7 @@
 import sys
 import math
 import configparser
+import json
 
 import numpy as np
 
@@ -36,10 +37,10 @@ sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 colors = [None for i in range(4)]
 
 #cv is Blue Green Red
-colors[0] = (255,0,0)
-colors[1] = (0, 255,0)
-colors[2] = (0, 0, 255)
-colors[3] = (255, 255,0)
+colors[0] = (255,0,0) #  Blue
+colors[1] = (0, 255,0) # Green
+colors[2] = (0, 0, 255) # Red
+colors[3] = (255, 255,0) # teal
 
 
 barcodes = pyzbar.decode(sheet, symbols=[pyzbar.ZBarSymbol.QRCODE])
@@ -111,6 +112,7 @@ sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
 
 rs = math.ceil(pxpmm*mark_width)
+marker_size=rs
 rs = (rs, rs)
 
 marker = [None for i in range(4)]
@@ -118,10 +120,6 @@ tmp = None
 for i in range(4):
     #print(f'{i=}')
     t= cv2.imread(f'common/out/{i}.png', cv2.IMREAD_GRAYSCALE)
-
-    # why is this reversed?
-    # daaaa.. it is not!!!
-    #t=(255 - t)
 
     marker[i] = cv2.resize(t, rs, interpolation = cv2.INTER_NEAREST)
 
@@ -173,23 +171,52 @@ cutoff = .90
 
 print(f'running w/ {cutoff=}')
 
+# TODO -- match only the top left, bottom right markers.
+# then get all the line markers in this rect
+#
+mo = [None for i in range(4)]
+molo = set()
+
+
+
+merge_f = int(marker_size/2)
+
 for i in range(4):
     t=match_template(sheet, marker[i], cutoff)
     print(f'{t=}')
     matches[i] = t
+    mo[i] = []
+    for j in range(len(t[0])):
 
+        x = int(t[1][j]/merge_f) * merge_f 
+        y = int(t[0][j]/merge_f) * merge_f  
+        o = { 'x': x, 'y': y }
+        _id = "/".join([str(i), str(o['x']), str(o['y'])])
+        if _id not in molo:
+            molo.add(_id)
+            mo[i].append(o)
 
-for j in range(4):
-    _marker= marker[j]
-    _match = matches[j]
-    nmatch = len(_match[0])
-    print(f'{nmatch=} matches for marker {j}')
-    for i in range(nmatch):
-        (x, y) = _match[1][i], _match[0][i]
-        ms_half = int(_marker.shape[1]/2) * 1
-        pos=(x + ms_half, y + ms_half)
+#assert(len(mo[0]) == 3)
 
-        #print(f"Draw {pos=} {ms_half=}")
-        cv2.circle(sheet_debug, pos, radius=4, color=colors[j], thickness=4)
+mak = {}
+
+mak['column'] = mo[0]
+mak['startlo'] = mo[1]
+mak['line'] = mo[2]
+mak['endbr'] = mo[3]
+
+print(json.dumps(mak, indent=1))
+
+if 1==1:
+    for j in range(4):
+        nmatch = len(mo[j])
+        print(f'{nmatch=} matches for marker {j}')
+        for i in mo[j]:
+            (x, y) = (i['x'], i['y'])
+            ms_half = int(marker[j].shape[1]/2) * 1
+            pos=(x + ms_half, y + ms_half)
+
+            #print(f"Draw {pos=} {ms_half=}")
+            cv2.circle(sheet_debug, pos, radius=4, color=colors[j], thickness=4)
 
 cv2.imwrite("sheet_debug.png", sheet_debug)
