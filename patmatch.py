@@ -28,7 +28,8 @@ mark_width  = int(mark_width.rstrip('m'))
 
 
 
-sheet_f = "process/t.tiff"
+
+sheet_f = "scans/one-test/0.png"
 _sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
 sheet = _sheet.copy()
 sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
@@ -50,12 +51,10 @@ x, y , w, h = barcode.rect
 center = (int(x+w/2), int(y+h/2))
 pxpmm = w/mqr_width
 print(f'found qrcode @ {x}/{y} w/ width = {w} px; {mqr_width} => {pxpmm} px/mm')
-print(f'poly {barcode.polygon}')
+print(f'poly {barcode.polygon}, orientation {barcode.orientation}')
 
 
 # polygon=[Point(x=1706, y=281), Point(x=1708, y=829), Point(x=2253, y=827), Point(x=2253, y=283)], quality=1, orientation='UP')
-
-
 #poly [Point(x=1170, y=574), Point(x=1534, y=580), Point(x=1540, y=216), Point(x=1175, y=209)]
 
 
@@ -79,10 +78,7 @@ p1 = barcode.polygon[1]
 p2 = barcode.polygon[2]
 p3 = barcode.polygon[3]
 
-print(f'{p0=}')
-print(f'{p1=}')
-print(f'{p2=}')
-print(f'{p3=}')
+
 
 # "fix"
 src_pos.append( (p3.x, p3.y) )
@@ -103,8 +99,13 @@ print(f'making homo w/\n{src_pos=}\n{dst_pos=}')
 (homo, status) = cv2.findHomography(np.array(src_pos), np.array(dst_pos))
 print(homo, status)
 
+cv2.imwrite("debug-pre-homo.png", sheet)
+sheet = cv2.warpPerspective(
+    _sheet, homo,
+    (_sheet.shape[1]+20, _sheet.shape[0]+20)
+    )
+cv2.imwrite("debug-post-homo.png", sheet)
 
-sheet = cv2.warpPerspective(_sheet, homo, (_sheet.shape[1]+20, _sheet.shape[0]+20))
 sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
 
