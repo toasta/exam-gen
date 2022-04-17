@@ -189,8 +189,6 @@ molo = set()
 
 
 
-merge_f = int(marker_size/2)
-
 for i in range(4):
     t=match_template(sheet, marker[i], cutoff)
     print(f'{t=}')
@@ -198,8 +196,7 @@ for i in range(4):
     mo[i] = []
     for j in range(len(t[0])):
 
-        x = int(t[1][j]/merge_f) * merge_f 
-        y = int(t[0][j]/merge_f) * merge_f  
+        (x, y) = (t[1][j], t[0][j])
         o = { 'x': x, 'y': y }
         _id = "/".join([str(i), str(o['x']), str(o['y'])])
         if _id not in molo:
