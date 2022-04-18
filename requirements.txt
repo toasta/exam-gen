@@ -1,7 +1,8 @@
 jinja2
-dt-apriltags
+#dt-apriltags
 numpy
 # opencv-python-headless
-moms_apriltag
+#moms_apriltag
 imageio
 pyzbar
+opencv-contrib-python-headless
