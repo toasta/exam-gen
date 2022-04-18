@@ -29,7 +29,7 @@ mark_width  = int(mark_width.rstrip('m'))
 
 
 
-sheet_f = "scans/./300dpi/-000.ppm"
+sheet_f = "scans/./200dpi/-000.ppm"
 try:
     sheet_f = sys.argv[1]
 except IndexError:
@@ -75,7 +75,6 @@ if 1==1:
     for i,_p in enumerate(barcode.polygon):
         p = (_p.x, _p.y)
         cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
-        cv2.circle(sheet_debug, (200, 300+i*40), radius=10, color=colors[i], thickness=2)
         #print(f'i is {i}, color is {colors[i]}')
     cv2.imwrite("sheet_debug.png", sheet_debug)
 
@@ -216,27 +215,79 @@ matches[3] = match_template(sheet, marker[3], cutoff)
 
 
 #assert(len(mo[0]) == 3)
+def merge_points2(m):
+    mdiff = 4
+    for i in range(len(m)):
+        pass
 
-drawn = set()
+def merge_points(m):
+    pp = []
+    for i in range(len(m[0])):
+        (y, x) = (m[0][i], m[1][i])
+        pp.append([x, y])
+    #found=False
+    #pp3 = []
+    #pp2 = sorted(pp, key=lambda x: x[0])
+
+    print(f'current number of points: {len(pp)=}')
+
+    pp2=[]
+    # TODO do this in np
+    # this is quadratic
+    while True:
+
+        found=False
+        for i in range(len(pp)):
+            print(f"points {i}")
+
+            x = _x = pp[i][0]
+            y = _y = pp[i][1]
+
+            co = 0
+            for j in range(len(pp)):
+
+                dist=abs(_x - pp[j][0]) + abs(_y - pp[j][1])
+
+                if dist > 4:
+                    pp2.append(pp[i])
+                    continue
+
+                #print(f'diff {i} against {j} {dist1=} {dist2=}')
+                found=True
+
+                x += pp[j][0]
+                y += pp[j][1]
+                co += 1
+
+        if found:
+            pp2.append([x//co, y//co])
+        else:
+            break
+
+    print(f'cleaned number of points: {len(pp2)=}')
+    return pp2
+        
+#matches[2] = merge_points(matches[2])
+    
+
 if 1==1:
-    for j in [0,1,3]:
+    for j in [0,1,3,2]:
         nmatch = len(matches[j][0])
         print(f'{nmatch=} matches for marker {j}')
         for i in range(nmatch):
             (y, x) = (matches[j][0][i], matches[j][1][i])
-            y = y//marker_size * marker_size
-            x = x//marker_size * marker_size
-            o = f'{x}/{y}'
-            if o in drawn:
-                print("skip")
-                continue
+            x += 1
+            y += 1
+            #fak=1
+            #y = int(y//fak * fak + fak/2)
+            #x = int(x//fak * fak + fak/2)
+            o = f'{x//2}/{y//2}'
 
 
-            drawn.add(o)
-            ms_half = int(marker[j].shape[1]/2) * 1
+            ms_half = int(marker[j].shape[1]/2) * 1 
             pos=(int(x + ms_half), int(y + ms_half))
 
             print(f"Draw {pos=}")
-            cv2.circle(sheet_debug, pos, radius=marker[j].shape[0]//2, color=colors[j], thickness=4)
+            cv2.circle(sheet_debug, pos, radius=marker[j].shape[0]//2, color=colors[j], thickness=2)
 
-cv2.imwrite("sheet_debug.png", sheet_debug)
+cv2.imwrite("debug-sheet.png", sheet_debug)
