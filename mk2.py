@@ -77,17 +77,17 @@ def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
     bindata.extend(iv)
     bindata.extend(crypted)
 
-    print(a)
-
 
     cmd=['qrencode', 
-        '-t', 'png',
-        '-o', of,
-        '-d', '600',
+        '--type', 'png',
+        '--output', of,
+        '--dpi', '600',
+        '--size', '1',
+        '--margin', '0',
         '--8bit',
         ]
-    r = subprocess.run(cmd, input=bindata, capture_output=True)
-    #print(r)
+    r = subprocess.run(cmd, input=bindata, capture_output=True, check=True)
+    print(r)
     return True
 
 def gen_one_question_block(i, key=None):

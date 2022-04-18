@@ -1,5 +1,5 @@
 
-SIZE=7
+SIZE=4
 
 function foo()
 {

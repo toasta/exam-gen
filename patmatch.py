@@ -29,7 +29,13 @@ mark_width  = int(mark_width.rstrip('m'))
 
 
 
-sheet_f = "scans/one-test/0.png"
+sheet_f = "scans/./300dpi/-000.ppm"
+try:
+    sheet_f = sys.argv[1]
+except IndexError:
+    pass
+    
+
 _sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
 sheet = _sheet.copy()
 sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
@@ -65,7 +71,7 @@ dst_pos = []
 # 1 bottom right
 # 2 bottom left
 # 3 top left
-if 1==0:
+if 1==1:
     for i,_p in enumerate(barcode.polygon):
         p = (_p.x, _p.y)
         cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
@@ -109,10 +115,18 @@ print(homo, status)
 
 
 cv2.imwrite("debug-pre-homo.png", sheet)
-sheet = cv2.warpPerspective(
-    _sheet, homo,
-    (_sheet.shape[1]+20, _sheet.shape[0]+20)
-    )
+if 1==1:
+    sheet = _sheet.copy()
+else:
+    print("rectifying image")
+    sheet = cv2.warpPerspective(
+        _sheet, homo,
+        (_sheet.shape[1]+20, _sheet.shape[0]+20)
+        )
+
+
+#(_, sheet) = cv2.threshold(sheet,92,255,cv2.THRESH_BINARY)
+
 cv2.imwrite("debug-post-homo.png", sheet)
 
 sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
@@ -124,6 +138,7 @@ sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 rs = math.ceil(pxpmm*mark_width)
 marker_size=rs
 rs = (rs, rs)
+print(f"markers will be rescaled from {mark_width} to {rs}")
 
 marker = [None for i in range(4)]
 tmp = None
@@ -133,7 +148,7 @@ for i in range(4):
 
     marker[i] = cv2.resize(t, rs, interpolation = cv2.INTER_NEAREST)
 
-    if 1==0:
+    if 1==1:
         cv2.imwrite(f'debug-marker{i}.png', t)
         cv2.imwrite(f'debug-marker{i}-resized.png', marker[i])
     #print(t)
@@ -146,84 +161,82 @@ if 1 == 0:
 
 
 #match_method = cv2.TM_SQDIFF
-#match_method = cv2.TM_SQDIFF_NORMED
+match_method = cv2.TM_SQDIFF_NORMED
 #match_method = cv2.TM_CCOEFF_NORMED
 match_method = cv2.TM_CCORR_NORMED
 
-def match_template(img, marker, threshold, return_res=False):
+def match_template(img, marker, threshold=.9, return_res=False):
     res = cv2.matchTemplate(img, marker, match_method)
     if return_res:
         return res
+
     loc = np.where(res > threshold)
+
+    #print(f'returning {loc=}')
     return loc
 
 
 matches = [None for i in range(4)]
 cutoff=None
-cutoff_limit=.6
 #for j in range(100):
-if 1==0:
-    t=match_template(sheet, marker[0], match_method, return_res=True)
-    for j in range(100):
-        cutoff = (100-j) / 100
+if 1==1:
+    t=match_template(sheet, marker[0], return_res=True)
+    merk = None
+    found = False
+    for j in range(100, 60, -1):
 
-        if cutoff < cutoff_limit:
-            print(f"{cutoff=} < {cutoff_limit=}. something wrong. cowardly exiting")
-            sys.exit(1)
+        cutoff = j / 100
         loc = np.where(t > cutoff)
         nmarkers = len(loc[0])
-        print(f"{cutoff=} => {nmarkers=}")
-        # should be exactly thre.....
+        print(f'{nmarkers=} @ {cutoff=}')
+
         if nmarkers >= 3:
             break
-cutoff = .90
+
+matches[0] = match_template(sheet, marker[0], cutoff)
 
 
-print(f'running w/ {cutoff=}')
+if 1==0:
+    for j in range(100, 60, -1):
+        cutoff = j / 100
+        t1=match_template(sheet, marker[1], match_method, return_res=True)
+        t2=match_template(sheet, marker[3], match_method, return_res=True)
+        n1 = len((np.where(t1 > cutoff))[0])
+        n2 = len((np.where(t2 > cutoff))[0])
+        if 1==1:
+            print(f'marker2 {n1}, marker3 {n2} @ cutoff {cutoff}')
+        if n1 and n1==n2:
+            break
 
-# TODO -- match only the top left, bottom right markers.
-# then get all the line markers in this rect
-#
-mo = [None for i in range(4)]
-molo = set()
+cutoff=.80
 
+matches[1] = match_template(sheet, marker[1], cutoff)
+matches[2] = match_template(sheet, marker[2], cutoff)
+matches[3] = match_template(sheet, marker[3], cutoff)
 
-
-for i in range(4):
-    t=match_template(sheet, marker[i], cutoff)
-    print(f'{t=}')
-    matches[i] = t
-    mo[i] = []
-    for j in range(len(t[0])):
-
-        (x, y) = (t[1][j], t[0][j])
-        o = { 'x': x, 'y': y }
-        _id = "/".join([str(i), str(o['x']), str(o['y'])])
-        if _id not in molo:
-            molo.add(_id)
-            mo[i].append(o)
 
 #assert(len(mo[0]) == 3)
 
-mak = {}
-
-mak['column'] = mo[0]
-mak['startlo'] = mo[1]
-mak['line'] = mo[2]
-mak['endbr'] = mo[3]
-
-print(json.dumps(mak, indent=1))
-
+drawn = set()
 if 1==1:
-    for j in range(4):
-        nmatch = len(mo[j])
+    for j in [0,1,3]:
+        nmatch = len(matches[j][0])
         print(f'{nmatch=} matches for marker {j}')
-        for i in mo[j]:
-            (x, y) = (i['x'], i['y'])
-            ms_half = int(marker[j].shape[1]/2) * 1
-            pos=(x + ms_half, y + ms_half)
+        for i in range(nmatch):
+            (y, x) = (matches[j][0][i], matches[j][1][i])
+            y = y//marker_size * marker_size
+            x = x//marker_size * marker_size
+            o = f'{x}/{y}'
+            if o in drawn:
+                print("skip")
+                continue
 
-            #print(f"Draw {pos=} {ms_half=}")
-            cv2.circle(sheet_debug, pos, radius=4, color=colors[j], thickness=4)
+
+            drawn.add(o)
+            ms_half = int(marker[j].shape[1]/2) * 1
+            pos=(int(x + ms_half), int(y + ms_half))
+
+            print(f"Draw {pos=}")
+            cv2.circle(sheet_debug, pos, radius=marker[j].shape[0]//2, color=colors[j], thickness=4)
 
 cv2.imwrite("sheet_debug.png", sheet_debug)
