@@ -83,7 +83,7 @@ def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
         '--output', of,
         '--dpi', '600',
         '--size', '1',
-        '--margin', '0',
+        '--margin', '4',
         '--8bit',
         ]
     r = subprocess.run(cmd, input=bindata, capture_output=True, check=True)
