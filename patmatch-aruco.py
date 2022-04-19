@@ -37,16 +37,19 @@ colors[2] = (0, 0, 255) # Red
 colors[3] = (255, 255,0) # teal
 
 def get_markers(img, debug=False):
+    a = np.load('common/cd.npz')
 
-    cv_file = cv2.FileStorage('common/mydict.dict', cv2.FILE_STORAGE_READ)
-    
-    aruco_dict = cv2.aruco.custom_dictionary(0, 4, 1)
-    cv2.aruco.Dictionary_readDictionary(cv_file.getNode("D"), aruco_dict)
+    aruco_dict = cv2.aruco.custom_dictionary(int(a['nmarkers']), int(a['markersize']), 0)
+    aruco_dict.maxCorrectionBits = int(a['maxCorrectionBits'])
+    aruco_dict.bytesList = a['bytesList']
 
     arucoParams = cv2.aruco.DetectorParameters_create()
-    (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, arucoDict, parameters=arucoParams)
+    (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, aruco_dict, parameters=arucoParams)
 
+    print(corners)
     ids=ids.flatten()
+    print(ids)
+
 
     markers = [[] for i in range(4)]
 

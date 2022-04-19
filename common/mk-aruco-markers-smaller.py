@@ -23,8 +23,13 @@ for i,j in enumerate(cv2.aruco.Dictionary_getBitsFromByteList(a.bytesList, size*
     buf.append(f'marker_{i}: "{b}"')
 
 cvf = cv2.FileStorage("mydict.dict", cv2.FILE_STORAGE_WRITE)
-
 cvf.write("D", "\n".join(buf))
+
+np.savez("cd.npz", nmarkers=num_markers,
+    markersize=size,
+    maxCorrectionBits=a.maxCorrectionBits,
+    bytesList=a.bytesList,
+    )
 
 
 for i in range(num_markers):
