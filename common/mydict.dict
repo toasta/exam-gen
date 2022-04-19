@@ -1,0 +1,12 @@
+nmarkers: 5
+markersize: 3
+maxCorrectionBits: 1
+marker_0: 011110010
+marker_1: 000000010
+marker_2: 011101000
+marker_3: 000000100
+marker_4: 111100000
+marker_5: 000010111
+marker_6: 000000000
+marker_7: 110001011
+marker_8: 000000011

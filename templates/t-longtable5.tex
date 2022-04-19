@@ -1,5 +1,6 @@
 \documentclass{extarticle}
 
+\usepackage{scrlayer-scrpage}
 \usepackage{geometry}
 \usepackage{longtable}
 \usepackage{calc}
@@ -8,20 +9,33 @@
 \usepackage{tabularx}
 \geometry{
 a4paper,
-left=15mm,
-right=15mm,
-top=15mm,
-bottom=15mm,
+left=20mm,
+right=20mm,
+top=20mm,
+bottom=20mm,
 }
 \usepackage{graphicx}
 \usepackage{amsfonts}
 \usepackage{amssymb}
 \parindent0mm
+\setlength{\footheight}{14pt}
+\setlength{\headheight}{14pt}
 
 
+{% macro marker(num) %}
+    \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
+{% endmacro %}
+
+\ihead{ {{ marker(0) }} }
+\ohead{ {{ marker(0) }} }
+\ifoot{ {{ marker(0) }} }
+\ofoot{ {{ marker(0) }} }
+\cfoot{\pagemark}
 
 
 \begin{document}
+\pagestyle{scrheadings}
+
 
 {% for sheet in all_sheets %}
 
@@ -56,15 +70,12 @@ bottom=15mm,
 \includegraphics[width=\textwidth]{{ '{'}}{{ sheet.qr }}}
 \end{minipage}
 
-{% macro marker(num) %}
-    \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
-{% endmacro %}
 
 
 \begin{longtable}[l]{r |  c c c | l }
 
     {% for jj in range(3) %}
-        & {{ marker(0) }}
+        & {{ marker(1) }}
     {% endfor %}
     \endhead
     
@@ -77,7 +88,7 @@ bottom=15mm,
         \\*
         \multicolumn{5}{l}{}
         \\*
-        {{ marker(1) }}
+        {{ marker(2) }}
             &
             $\boxtimes$
 
@@ -85,7 +96,7 @@ bottom=15mm,
                         & $\square$
                 {% endfor %}
 
-                    & {{ marker(2) }}
+                    & {{ marker(3) }}
                     \\*
 
                 {% for j in i.a %}
@@ -98,7 +109,7 @@ bottom=15mm,
                     & {{ marker(2) }}
 
                      {% if loop.last %}
-                        {{ marker(3) }} \\
+                        {{ marker(4) }} \\
                      {% else %}
                     \\*
                      {% endif %}
