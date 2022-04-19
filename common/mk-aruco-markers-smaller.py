@@ -13,13 +13,18 @@ a=cv2.aruco.Dictionary_create(num_markers, size)
 #print(a.bytesList)
 
 fh = open('mydict.dict', 'w')
-print(f'nmarkers: {num_markers}', file=fh)
-print(f'markersize: {size}', file=fh)
-print(f'maxCorrectionBits: {a.maxCorrectionBits}', file=fh)
+buf = []
+buf.append(f'nmarkers: {num_markers}')
+buf.append(f'markersize: {size}')
+buf.append(f'maxCorrectionBits: {a.maxCorrectionBits}')
 for i,j in enumerate(cv2.aruco.Dictionary_getBitsFromByteList(a.bytesList, size*size)):
     b=str(j)
     b = re.sub('[^01]', '', b)
-    print(f'marker_{i}: {b}', file=fh)
+    buf.append(f'marker_{i}: "{b}"')
+
+cvf = cv2.FileStorage("mydict.dict", cv2.FILE_STORAGE_WRITE)
+
+cvf.write("D", "\n".join(buf))
 
 
 for i in range(num_markers):

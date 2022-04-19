@@ -16,6 +16,7 @@ SECTION="DEFAULT"
 
 
 sheet_f = "scans/./200dpi/-000.ppm"
+sheet_f = "process/t.tiff"
 try:
     sheet_f = sys.argv[1]
 except IndexError:
@@ -37,7 +38,11 @@ colors[3] = (255, 255,0) # teal
 
 def get_markers(img, debug=False):
 
-    arucoDict = cv2.aruco.Dictionary_get(cv2.aruco.DICT_4X4_50)
+    cv_file = cv2.FileStorage('common/mydict.dict', cv2.FILE_STORAGE_READ)
+    
+    aruco_dict = cv2.aruco.custom_dictionary(0, 4, 1)
+    cv2.aruco.Dictionary_readDictionary(cv_file.getNode("D"), aruco_dict)
+
     arucoParams = cv2.aruco.DetectorParameters_create()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, arucoDict, parameters=arucoParams)
 

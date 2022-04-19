@@ -42,7 +42,7 @@
              { "ap": "$2^{60}$", "sol": false },
              { "ap": "$2^{8}$", "sol": false },
              { "ap": "mehr als Atome im Weltall", "sol": false},
-             { "ap": "$\\sim 3.402824 \\times 10^38$", "sol": true, "factor": 2, "nofalse": true}
+             { "ap": "$\\sim 3.402824 \\times 10^{38}$", "sol": true, "factor": 2, "nofalse": true}
          ]
      },
      {
