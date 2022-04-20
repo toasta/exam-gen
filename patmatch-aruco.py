@@ -15,17 +15,6 @@ SECTION="DEFAULT"
 
 
 
-sheet_f = "scans/./200dpi/-000.ppm"
-sheet_f = "process/t.tiff"
-try:
-    sheet_f = sys.argv[1]
-except IndexError:
-    pass
-    
-
-_sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
-sheet = _sheet.copy()
-sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
 
 colors = [None for i in range(4)]
@@ -46,94 +35,134 @@ def get_markers(img, debug=False):
     arucoParams = cv2.aruco.DetectorParameters_create()
     (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, aruco_dict, parameters=arucoParams)
 
-    print(corners)
+#    print(corners)
     ids=ids.flatten()
-    print(ids)
+#    print(ids)
 
 
-    markers = [[] for i in range(4)]
+    markers = {}
 
 
     for (mc, _id) in zip(corners, ids):
         (tl, tr, br, bl) = mc.reshape((4, 2))
         x = int((tl[0] + br[0]) / 2)
         y = int((tr[1] + bl[1]) / 2)
-        if _id >= 0 and _id < 5:
-            markers[_id].append((x, y))
-            if debug:
-                col=colors[_id]
-                cv2.circle(sheet_debug, (x, y), radius=4, color=col, thickness=2)
+
+        if _id not in markers.keys():
+            markers[_id] = []
+
+        markers[_id].append((x, y))
+        if debug:
+            col=colors[_id]
+            cv2.circle(sheet_debug, (x, y), radius=4, color=col, thickness=2)
 
     #print(corners, ids, rejected)
     return markers
 
+def get_barcode(sheet):
 
-barcodes = pyzbar.decode(sheet, symbols=[pyzbar.ZBarSymbol.QRCODE])
-assert(len(barcodes) == 1)
-barcode = barcodes[0]
-x, y , w, h = barcode.rect
-center = (int(x+w/2), int(y+h/2))
-print(f'found qrcode @ {x}/{y} w/ width = {w} px;')
+    barcodes = pyzbar.decode(sheet, symbols=[pyzbar.ZBarSymbol.QRCODE])
+    assert(len(barcodes) == 1)
+    barcode = barcodes[0]
+    x, y , w, h = barcode.rect
+    center = (int(x+w/2), int(y+h/2))
+    print(f'found qrcode @ {x}/{y} w/ width = {w} px;')
 
-if 1==0:
-    for i,_p in enumerate(barcode.polygon):
-        p = (_p.x, _p.y)
-        cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
-        #print(f'i is {i}, color is {colors[i]}')
-
-markers = get_markers(sheet)
-
-src_pos = []
-dst_pos = []
+    if 1==0:
+        for i,_p in enumerate(barcode.polygon):
+            p = (_p.x, _p.y)
+            cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
+            #print(f'i is {i}, color is {colors[i]}')
+    return barcode
 
 
-m2 = sorted(markers[2], key=lambda x: x[1])
-first = m2[0]
-src_pos.append( first )
-dst_pos.append( first )
-if 1==1:
-    for j in [1, 2, -1, -2]: 
-        i = m2[j]
-        a= i
-        b= (first[0], i[1])
-        src_pos.append( a)
-        dst_pos.append( b)
-else:
-    for i in m2[1:]:
-        a= i
-        b= (first[0], i[1])
-        src_pos.append( a)
-        dst_pos.append( b)
+def rectify_image(sheet):
+    print(f"rectifying image, {sheet.shape=}")
+    dbg1 = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
+    markers = get_markers(sheet)
+    markers = markers[0]
 
-print(f'homo for\n{src_pos} =>\n{dst_pos}')
-s = np.array(src_pos, dtype=np.float32)
-d = np.array(dst_pos, dtype=np.float32)
-(homo, status) = cv2.findHomography(s, d)
-#homo = cv2.getPerspectiveTransform(s, d)
-print(f'{homo=}, {status=}')
+    tmp = sorted(markers, key=lambda x: x[1])
+    print(f'markers0 sorted by y: {tmp}')
 
-assert(homo)
+    ss= sheet.shape
 
-if 1==0:
-    sheet = _sheet.copy()
-else:
-    print("rectifying image")
-    cv2.imwrite("debug-pre-homo.png", sheet)
-    sheet = cv2.perspectiveTransform( _sheet, homo, (sheet.shape[0] + 1000, sheet.shape[1] + 1000))
-    #sheet = cv2.warpPerspective(
-    #    _sheet, homo,
-    #    (_sheet.shape[1]+20, _sheet.shape[0]+20)
-    #    )
+    src_pos = []
+    dst_pos = []
+
+    # opencv wants y first
+    # markers are x,y
+
+    #leftmost
+    if tmp[0][0] < tmp[1][0]:
+        a=tmp[0]
+        b=tmp[1]
+    else:
+        a=tmp[1]
+        b=tmp[0]
+
+    print(f'top:left:{a}, top:right:{b}')
+
+    src_pos.append(a)
+    dst_pos.append((0,0))
+    src_pos.append(b)
+    dst_pos.append((ss[1],0))
+
+    # FIXME DRY
+
+    if tmp[2][1] < tmp[3][1]:
+        a=tmp[2]
+        b=tmp[3]
+    else:
+        a=tmp[3]
+        b=tmp[2]
+
+    # bottom left
+    print(f'bottom:left:{a}, bottom:right:{b}')
+    src_pos.append(a)
+    dst_pos.append( (0, ss[0]) )
+
+    src_pos.append(b)
+    dst_pos.append( (ss[1], ss[0]) )
+
+    if 1==1:
+        for i,j in enumerate(src_pos):
+            cv2.circle(dbg1, j, radius=3, color=colors[i], thickness=9)
+        cv2.imwrite("debug-rect-corners.png", dbg1)
+
+    s = np.array(src_pos, dtype=np.float32)
+    d = np.array(dst_pos, dtype=np.float32)
+    print('source points:')
+    print(s)
+    print('destination points:')
+    print(d)
+    (homo, status) = cv2.findHomography(s, d)
+    print(f'homo for\n{src_pos} =>\n{dst_pos}')
+    print(f'{homo=}, {status=}')
+    sheet = cv2.warpPerspective(
+        sheet, homo,
+        (sheet.shape[1]+20, sheet.shape[0]+20)
+        )
     cv2.imwrite("debug-post-homo.png", sheet)
+    return sheet
 
 
-#(_, sheet) = cv2.threshold(sheet,92,255,cv2.THRESH_BINARY)
 
 
-sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+if __name__ == '__main__':
 
-cv2.imwrite("debug-sheet.png", sheet_debug)
+    sheet_f = "scans/./200dpi/-000.ppm"
+    sheet_f = "process/t.tiff"
+    try:
+        sheet_f = sys.argv[1]
+    except IndexError:
+        pass
+        
 
-#sys.exit(1)
+    _sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
+    sheet = _sheet.copy()
+    sheet = rectify_image(sheet)
+    sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
+    cv2.imwrite("debug-sheet.png", sheet_debug)
