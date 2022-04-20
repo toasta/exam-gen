@@ -76,11 +76,10 @@ def get_barcode(sheet):
     return barcode
 
 
-def rectify_image(sheet):
+def rectify_image(sheet, markers):
     print(f"rectifying image, {sheet.shape=}")
     dbg1 = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
-    markers = get_markers(sheet)
     markers = markers[0]
 
     tmp = sorted(markers, key=lambda x: x[1])
@@ -148,6 +147,18 @@ def rectify_image(sheet):
     return sheet
 
 
+def get_question_ranges(sheet, markers):
+    begin   = sorted(markers[3], key=lambda x: x[1])
+    end     = sorted(markers[4], key=lambda x: x[1])
+
+    print(f'got {len(begin)=} begin markers, {len(end)} end markers')
+    assert(len(begin) == len(end))
+    ret=[]
+    for (i,j) in enumerate(begin):
+        ret.append({"yfrom": begin[i][1], 'yto': end[i][1]})
+
+    return ret
+
 
 
 if __name__ == '__main__':
@@ -162,7 +173,34 @@ if __name__ == '__main__':
 
     _sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
     sheet = _sheet.copy()
-    sheet = rectify_image(sheet)
+    barcode = get_barcode(sheet)
+    markers = get_markers(sheet)
+    sheet = rectify_image(sheet, markers)
+    markers = get_markers(sheet)
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+
+    qranges = get_question_ranges(sheet, markers)
+    print(qranges)
+
+    # 4 => right bottom per question
+    # 3 =>  ??? 
+    # 2 => lines per answer
+    # 1 => columns
+
+    cols = markers[1]
+
+    for i in cols:
+        cv2.circle(sheet_debug, i, radius=4, color=colors[2], thickness=2)
+
+    if 1==1:
+        for i in qranges:
+            (yfrom, yto) = (i['yfrom'], i['yto'])
+            lines = filter(lambda x: x[1] >= yfrom and x[1] <= yto, markers[2])
+            for l in lines:
+                for c in cols:
+                    p=(c[0], l[1])
+                    print(p)
+
+                    cv2.circle(sheet_debug, p, radius=4, color=colors[2], thickness=2)
 
     cv2.imwrite("debug-sheet.png", sheet_debug)
