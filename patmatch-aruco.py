@@ -26,6 +26,13 @@ colors[2] = (0, 0, 255) # Red
 colors[3] = (255, 255,0) # teal
 
 def get_markers(img, debug=False):
+
+    # 0 => page corners
+    # 1 => columns
+    # 2 => begin answers
+    # 3 => end answers
+    # 4 => line
+    #
     a = np.load('common/cd.npz')
 
     aruco_dict = cv2.aruco.custom_dictionary(int(a['nmarkers']), int(a['markersize']), 0)
@@ -33,6 +40,7 @@ def get_markers(img, debug=False):
     aruco_dict.bytesList = a['bytesList']
 
     arucoParams = cv2.aruco.DetectorParameters_create()
+    arucoParams.cornerRefinementMaxIterations=64 
     (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, aruco_dict, parameters=arucoParams)
 
 #    print(corners)
@@ -101,14 +109,14 @@ def rectify_image(sheet, markers):
         a=tmp[1]
         b=tmp[0]
 
-    print(f'top:left:{a}, top:right:{b}')
+    tl=a
+    tr=b
+    print(f'top:left:{tl}, top:right:{tr}')
 
     src_pos.append(a)
-    dst_pos.append((0,0))
+    dst_pos.append(a)
     src_pos.append(b)
-    dst_pos.append((ss[1],0))
-
-    # FIXME DRY
+    dst_pos.append((b[0],a[1]))
 
     if tmp[2][1] < tmp[3][1]:
         a=tmp[2]
@@ -120,25 +128,26 @@ def rectify_image(sheet, markers):
     # bottom left
     print(f'bottom:left:{a}, bottom:right:{b}')
     src_pos.append(a)
-    dst_pos.append( (0, ss[0]) )
+    dst_pos.append( (tl[0], a[1]) )
 
     src_pos.append(b)
-    dst_pos.append( (ss[1], ss[0]) )
+    dst_pos.append( (tr[0], a[1]) )
 
-    if 1==1:
+    if 1==0:
         for i,j in enumerate(src_pos):
             cv2.circle(dbg1, j, radius=3, color=colors[i], thickness=9)
         cv2.imwrite("debug-rect-corners.png", dbg1)
 
     s = np.array(src_pos, dtype=np.float32)
     d = np.array(dst_pos, dtype=np.float32)
-    print('source points:')
-    print(s)
-    print('destination points:')
-    print(d)
     (homo, status) = cv2.findHomography(s, d)
-    print(f'homo for\n{src_pos} =>\n{dst_pos}')
-    print(f'{homo=}, {status=}')
+    if 1==0:
+        print('source points:')
+        print(s)
+        print('destination points:')
+        print(d)
+        print(f'homo for\n{src_pos} =>\n{dst_pos}')
+        print(f'{homo=}, {status=}')
     sheet = cv2.warpPerspective(
         sheet, homo,
         (sheet.shape[1]+20, sheet.shape[0]+20)
@@ -148,8 +157,8 @@ def rectify_image(sheet, markers):
 
 
 def get_question_ranges(sheet, markers):
-    begin   = sorted(markers[3], key=lambda x: x[1])
-    end     = sorted(markers[4], key=lambda x: x[1])
+    begin   = sorted(markers[2], key=lambda x: x[1])
+    end     = sorted(markers[3], key=lambda x: x[1])
 
     print(f'got {len(begin)=} begin markers, {len(end)} end markers')
     assert(len(begin) == len(end))
@@ -175,17 +184,21 @@ if __name__ == '__main__':
     sheet = _sheet.copy()
     barcode = get_barcode(sheet)
     markers = get_markers(sheet)
+
     sheet = rectify_image(sheet, markers)
+    # reget markers
     markers = get_markers(sheet)
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+
+    for i,j in markers.items():
+        for k in j:
+            print(k)
+            cv2.circle(sheet_debug, k, radius=4, color=colors[3], thickness=2)
 
     qranges = get_question_ranges(sheet, markers)
     print(qranges)
 
-    # 4 => right bottom per question
-    # 3 =>  ??? 
-    # 2 => lines per answer
-    # 1 => columns
+
 
     cols = markers[1]
 
@@ -195,7 +208,7 @@ if __name__ == '__main__':
     if 1==1:
         for i in qranges:
             (yfrom, yto) = (i['yfrom'], i['yto'])
-            lines = filter(lambda x: x[1] >= yfrom and x[1] <= yto, markers[2])
+            lines = filter(lambda x: x[1] >= yfrom-10 and x[1] <= yto+10, markers[4])
             for l in lines:
                 for c in cols:
                     p=(c[0], l[1])

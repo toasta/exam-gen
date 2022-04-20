@@ -182,7 +182,7 @@ def doit():
         print(tmpl.render(
             all_sheets=all_sheets, 
             cfg=CFG[SECTION], 
-            short2object=short2object['short2object'],
+            #short2object=short2object['short2object'],
             common=common,
             ),
             file=fh
@@ -190,7 +190,7 @@ def doit():
 
 
 if __name__ == "__main__":
-    mfile="markers-simple.json"
-    with open(mfile) as fh:
-        short2object = json.load(fh)
+    #mfile="markers-simple.json"
+    #with open(mfile) as fh:
+    #    short2object = json.load(fh)
     doit()

@@ -1,0 +1,133 @@
+\documentclass{extarticle}
+
+\usepackage{scrlayer-scrpage}
+\usepackage{geometry}
+\usepackage{wrapfig}
+\usepackage{longtable}
+\usepackage{calc}
+\usepackage{multirow}
+\usepackage{multicol}
+\usepackage{tabularx}
+\geometry{
+a4paper,
+left=20mm,
+right=20mm,
+top=20mm,
+bottom=20mm,
+}
+\usepackage{graphicx}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\parindent0mm
+\setlength{\footheight}{14pt}
+\setlength{\headheight}{14pt}
+
+
+{% macro marker(num) %}
+\begin{minipage}{ {{common.marker_width}} }
+    \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
+\end{minipage}
+{% endmacro %}
+
+\ihead{ {{ marker(0) }} }
+\ohead{ {{ marker(0) }} }
+\ifoot{ {{ marker(0) }} }
+\ofoot{ {{ marker(0) }} }
+\cfoot{\pagemark}
+
+
+\begin{document}
+\pagestyle{scrheadings}
+
+
+{% for sheet in all_sheets %}
+
+
+\iffalse
+{{ sheet.json_readable }}
+\fi
+
+
+\begin{wrapfigure}{r}{ {{common.main_qr_width}} }
+\includegraphics[width={{common.main_qr_width}}]{{ '{'}}{{ sheet.qr }}}
+\end{wrapfigure}
+
+    { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
+
+%\begin{multicols}{2}[Hinweise: ]
+    \begin{itemize}
+    \item Sie koennen die Felder wie es ihnen beliebt markieren: Haeckchen, Kreuze, Kreise, ausmalen.
+    \item alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
+    
+    \item Sollten Sie einen Fehler korrigieren wollen:
+    \begin{itemize}
+    \item Markieren sie, dass ihre Loesung in der naechsten Spalte steht, indem sie das Kaestchen der Spalte markiern.
+    \item Markieren sie in dieser neuen Spalte \textbf{alle} richtigen Loesungen.
+    \item Als von Ihnen eingerichte Loesung gilt immer die am weitesten rechts liegende von Ihnen markierte Spalte.
+    \end{itemize}
+    \item Die Barcodes und Marker duerfen nicht veraendert werden.
+    \item Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
+    \item Vergessen Sie nicht, den Test zu unterschreiben.
+    \item Antwortmoeglichkeiten sind nicht auf mehrere Seiten aufgeteilt.
+    \item Beachten sie eine moegliche Rueckseite.
+\end{itemize}
+
+Viel Erfolg!
+
+%\end{multicols}
+
+
+
+
+\begin{longtable}[l]{r |  c c c | l }
+
+    {% for jj in range(3) %}
+        & {{ marker(1) }}
+    {% endfor %}
+    \endhead
+    
+    {% for i in sheet.questions %}
+        {% if not loop.first %}
+        \\*
+        {% endif %}
+        \multicolumn{5}{l}{
+            ({{i.points}}P) \textbf{ {{ i.q }}}
+        }
+        \\*
+        \\*
+        {{ marker(2) }}
+            & $\boxtimes$
+
+                {% for jj in range(2) %}
+                        & $\square$
+                {% endfor %}
+
+                    & {{ marker(4) }}
+                    \\*
+
+                {% for j in i.a %}
+                %\noindent\parbox[c]{\hsize}{ {{ j }} }
+                {{ j }} 
+
+                    {% for i in range(3) %}
+                        & $\square$
+                    {%- endfor %}
+
+                    &  {{ marker(4) }} 
+
+                     {% if loop.last %}
+                        {{ marker(3) }} \\
+                     {% else %}
+                    \\*
+                     {% endif %}
+
+                {% endfor %}
+    {% endfor %}
+    \end{longtable}
+
+
+    \cleardoublepage
+    
+{% endfor %}
+
+\end{document}
