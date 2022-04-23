@@ -35,13 +35,19 @@ def get_markers(img, debug=False):
     #
     a = np.load('common/cd.npz')
 
-    aruco_dict = cv2.aruco.custom_dictionary(int(a['nmarkers']), int(a['markersize']), 0)
+    aruco_dict = cv2.aruco.custom_dictionary(
+        int(a['nmarkers']), int(a['markersize']), 0)
     aruco_dict.maxCorrectionBits = int(a['maxCorrectionBits'])
     aruco_dict.bytesList = a['bytesList']
 
     arucoParams = cv2.aruco.DetectorParameters_create()
-    arucoParams.cornerRefinementMaxIterations=64 
-    (corners, ids, rejected) = cv2.aruco.detectMarkers(sheet, aruco_dict, parameters=arucoParams)
+    #arucoParams.cornerRefinementMaxIterations   = 32 
+    #arucoParams.adaptiveThreshWinSizeStep       = 2
+    arucoParams.adaptiveThreshWinSizeMax        = 8
+    #arucoParams.minMarkerPerimeterRate           = .03/8
+
+    (corners, ids, rejected) = cv2.aruco.detectMarkers(
+        sheet, aruco_dict, parameters=arucoParams)
 
 #    print(corners)
     ids=ids.flatten()
@@ -89,6 +95,7 @@ def rectify_image(sheet, markers):
     dbg1 = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     markers = markers[0]
+    assert(len(markers) == 4)
 
     tmp = sorted(markers, key=lambda x: x[1])
     print(f'markers0 sorted by y: {tmp}')
@@ -118,7 +125,7 @@ def rectify_image(sheet, markers):
     src_pos.append(b)
     dst_pos.append((b[0],a[1]))
 
-    if tmp[2][1] < tmp[3][1]:
+    if tmp[2][0] < tmp[3][0]:
         a=tmp[2]
         b=tmp[3]
     else:
