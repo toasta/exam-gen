@@ -8,6 +8,7 @@ import cv2
 import cv2.aruco
 
 from pyzbar import pyzbar
+from lib import Mcolor
 
 CFG = configparser.ConfigParser()
 CFG.read('config.ini')
@@ -16,14 +17,7 @@ SECTION="DEFAULT"
 
 
 
-
-colors = [None for i in range(4)]
-
-#cv is Blue Green Red
-colors[0] = (255,0,0) #  Blue
-colors[1] = (0, 255,0) # Green
-colors[2] = (0, 0, 255) # Red
-colors[3] = (255, 255,0) # teal
+mcolor = Mcolor.Mcolor()
 
 def get_markers(img, debug=False):
 
@@ -41,14 +35,22 @@ def get_markers(img, debug=False):
     aruco_dict.bytesList = a['bytesList']
 
     arucoParams = cv2.aruco.DetectorParameters_create()
-    #arucoParams.cornerRefinementMaxIterations   = 32 
-    #arucoParams.adaptiveThreshWinSizeStep       = 2
-    arucoParams.adaptiveThreshWinSizeMax        = 8
-    #arucoParams.minMarkerPerimeterRate           = .03/8
+    if 1==1:
+        #arucoParams.cornerRefinementMaxIterations   = 64 
+        arucoParams.adaptiveThreshWinSizeStep       = 4
+        arucoParams.adaptiveThreshWinSizeMax        = 16
+        #arucoParams.minMarkerPerimeterRate          = 1/10000
+        #arucoParams.maxMarkerPerimeterRate          = 4
+        #arucoParams.minMarkerDistanceRate           =1/10000
+        arucoParams.markerBorderBits           = 1
+        arucoParams.minMarkerDistanceRate           = 0.05/2
 
     (corners, ids, rejected) = cv2.aruco.detectMarkers(
-        sheet, aruco_dict, parameters=arucoParams)
+        img, aruco_dict, parameters=arucoParams)
 
+    if ids is None:
+        print("no markers found")
+        return
 #    print(corners)
     ids=ids.flatten()
 #    print(ids)
@@ -67,7 +69,7 @@ def get_markers(img, debug=False):
 
         markers[_id].append((x, y))
         if debug:
-            col=colors[_id]
+            col=mcolor.get(_id)
             cv2.circle(sheet_debug, (x, y), radius=4, color=col, thickness=2)
 
     #print(corners, ids, rejected)
@@ -85,7 +87,8 @@ def get_barcode(sheet):
     if 1==0:
         for i,_p in enumerate(barcode.polygon):
             p = (_p.x, _p.y)
-            cv2.circle(sheet_debug, p, radius=3, color=colors[i], thickness=9)
+            col=mcolor.get(i)
+            cv2.circle(sheet_debug, p, radius=3, color=col, thickness=9)
             #print(f'i is {i}, color is {colors[i]}')
     return barcode
 
@@ -142,7 +145,8 @@ def rectify_image(sheet, markers):
 
     if 1==0:
         for i,j in enumerate(src_pos):
-            cv2.circle(dbg1, j, radius=3, color=colors[i], thickness=9)
+            col=mcolor.get(i)
+            cv2.circle(dbg1, j, radius=3, color=col, thickness=9)
         cv2.imwrite("debug/rect-corners.png", dbg1)
 
     s = np.array(src_pos, dtype=np.float32)
@@ -176,6 +180,20 @@ def get_question_ranges(sheet, markers):
     return ret
 
 
+def save_debug(img, what):
+    cv2.imwrite("debug/" + what + ".png", img)
+    
+def draw_markers(img, markers):
+    a=img.copy()
+    if markers is None:
+        print("no markers to draw")
+        return
+    for i,j in markers.items():
+        for k in j:
+            col=mcolor.get(i)
+            print(f'{col=}')
+            cv2.circle(a, k, radius=4, color=col, thickness=2)
+    return a
 
 if __name__ == '__main__':
 
@@ -188,19 +206,27 @@ if __name__ == '__main__':
         
 
     _sheet = cv2.imread(sheet_f, cv2.IMREAD_GRAYSCALE)
+    save_debug(_sheet, "original")
     sheet = _sheet.copy()
     barcode = get_barcode(sheet)
     markers = get_markers(sheet)
+    sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+    _ = draw_markers(sheet_debug, markers)
+    save_debug(_, "markers-unrectified")
+
 
     sheet = rectify_image(sheet, markers)
+    save_debug(sheet, "rectified")
     # reget markers
+    sheet = cv2.morphologyEx(sheet,cv2.MORPH_CLOSE,(2,2))
+    save_debug(sheet, "morph-close")
     markers = get_markers(sheet)
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     for i,j in markers.items():
         for k in j:
-            print(k)
-            cv2.circle(sheet_debug, k, radius=4, color=colors[3], thickness=2)
+            col=mcolor.get(i)
+            cv2.circle(sheet_debug, k, radius=4, color=col, thickness=2)
 
     qranges = get_question_ranges(sheet, markers)
     print(qranges)
@@ -210,7 +236,8 @@ if __name__ == '__main__':
     cols = markers[1]
 
     for i in cols:
-        cv2.circle(sheet_debug, i, radius=4, color=colors[2], thickness=2)
+        col=mcolor.get(2)
+        cv2.circle(sheet_debug, i, radius=4, color=col, thickness=2)
 
     if 1==1:
         for i in qranges:
@@ -219,8 +246,8 @@ if __name__ == '__main__':
             for l in lines:
                 for c in cols:
                     p=(c[0], l[1])
-                    print(p)
+                    col = mcolor.get(2)
+                    cv2.circle(sheet_debug, p, radius=4, color=col, thickness=2)
 
-                    cv2.circle(sheet_debug, p, radius=4, color=colors[2], thickness=2)
-
+    save_debug(sheet_debug, "markers")
     cv2.imwrite("debug/sheet.png", sheet_debug)

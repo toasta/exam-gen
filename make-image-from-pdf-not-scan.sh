@@ -2,7 +2,9 @@
 
 set -x 
 
-convert -density 200 out/a.pdf \
+convert -density 300 out/a.pdf \
     -background white -alpha remove \
-    -rotate 2 \
+    -rotate -3 \
+    -blur 2x2 \
     process/t.tiff
+#    +noise poisson \

@@ -7,7 +7,9 @@ import subprocess
 
 num_markers = 5
 size=3
-imsize = (10,10)
+border_bits = 1
+imsize = size + 2*border_bits
+imsize = (imsize, imsize)
 
 a=cv2.aruco.Dictionary_create(num_markers, size)
 #print(a.bytesList)
@@ -35,7 +37,7 @@ np.savez("cd.npz", nmarkers=num_markers,
 for i in range(num_markers):
     tag = np.zeros(imsize, dtype="uint8")
     # dict, id, sidePixel, img, border
-    cv2.aruco.drawMarker(a, i, imsize[0], tag, 1)
+    cv2.aruco.drawMarker(a, i, imsize[0], tag, border_bits)
     of1=f'out/{i}.png'
     of2=f'out/1000_{i}.png'
     cv2.imwrite(f"out/{i}.png", tag)
