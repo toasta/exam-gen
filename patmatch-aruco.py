@@ -136,7 +136,7 @@ def rectify_image(sheet, markers):
     if 1==0:
         for i,j in enumerate(src_pos):
             cv2.circle(dbg1, j, radius=3, color=colors[i], thickness=9)
-        cv2.imwrite("debug-rect-corners.png", dbg1)
+        cv2.imwrite("debug/rect-corners.png", dbg1)
 
     s = np.array(src_pos, dtype=np.float32)
     d = np.array(dst_pos, dtype=np.float32)
@@ -152,7 +152,7 @@ def rectify_image(sheet, markers):
         sheet, homo,
         (sheet.shape[1]+20, sheet.shape[0]+20)
         )
-    cv2.imwrite("debug-post-homo.png", sheet)
+    cv2.imwrite("debug/post-homo.png", sheet)
     return sheet
 
 
@@ -216,4 +216,4 @@ if __name__ == '__main__':
 
                     cv2.circle(sheet_debug, p, radius=4, color=colors[2], thickness=2)
 
-    cv2.imwrite("debug-sheet.png", sheet_debug)
+    cv2.imwrite("debug/sheet.png", sheet_debug)
