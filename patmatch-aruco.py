@@ -35,15 +35,21 @@ def get_markers(img, debug=False):
     aruco_dict.bytesList = a['bytesList']
 
     arucoParams = cv2.aruco.DetectorParameters_create()
+    if 1==0:
+        arucoParams.maxMarkerPerimeterRate          = 8
+        arucoParams.minMarkerDistanceRate           = 0.00000000001
+        arucoParams.minCornerDistanceRate = 0.00000000001
+        arucoParams.minMarkerDistanceRate = 0.00000000001
+        arucoParams.adaptiveThreshWinSizeStep = 1
+        arucoParams.adaptiveThreshWinSizeMin = 3
+        arucoParams.adaptiveThreshWinSizeMax = 32
     if 1==1:
-        #arucoParams.cornerRefinementMaxIterations   = 64 
-        arucoParams.adaptiveThreshWinSizeStep       = 4
-        arucoParams.adaptiveThreshWinSizeMax        = 16
-        #arucoParams.minMarkerPerimeterRate          = 1/10000
-        #arucoParams.maxMarkerPerimeterRate          = 4
-        #arucoParams.minMarkerDistanceRate           =1/10000
-        arucoParams.markerBorderBits           = 1
-        arucoParams.minMarkerDistanceRate           = 0.05/2
+        f=18
+        arucoParams.minMarkerPerimeterRate = 1/(1<<f)
+        arucoParams.cornerRefinementWinSize = 1
+        arucoParams.cornerRefinementMinAccuracy = 1/16
+        arucoParams.cornerRefinementMethod = cv2.aruco.CORNER_REFINE_CONTOUR
+        #arucoParams.minMarkerDistanceRate = 1/(1<<f)
 
     (corners, ids, rejected) = cv2.aruco.detectMarkers(
         img, aruco_dict, parameters=arucoParams)
@@ -192,7 +198,7 @@ def draw_markers(img, markers):
         for k in j:
             col=mcolor.get(i)
             print(f'{col=}')
-            cv2.circle(a, k, radius=4, color=col, thickness=2)
+            cv2.circle(a, k, radius=5, color=col, thickness=3)
     return a
 
 if __name__ == '__main__':
@@ -218,15 +224,15 @@ if __name__ == '__main__':
     sheet = rectify_image(sheet, markers)
     save_debug(sheet, "rectified")
     # reget markers
-    sheet = cv2.morphologyEx(sheet,cv2.MORPH_CLOSE,(2,2))
-    save_debug(sheet, "morph-close")
+    #sheet = cv2.morphologyEx(sheet,cv2.MORPH_CLOSE,(2,2))
+    #save_debug(sheet, "morph-close")
     markers = get_markers(sheet)
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     for i,j in markers.items():
         for k in j:
             col=mcolor.get(i)
-            cv2.circle(sheet_debug, k, radius=4, color=col, thickness=2)
+            cv2.circle(sheet_debug, k, radius=6, color=col, thickness=4)
 
     qranges = get_question_ranges(sheet, markers)
     print(qranges)

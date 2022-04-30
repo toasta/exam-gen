@@ -1,3 +1,0 @@
-%YAML:1.0
----
-D: "nmarkers: 5\nmarkersize: 3\nmaxCorrectionBits: 1\nmarker_0: \"011110010\"\nmarker_1: \"000000010\"\nmarker_2: \"011101000\"\nmarker_3: \"000000100\"\nmarker_4: \"111100000\"\nmarker_5: \"000010111\"\nmarker_6: \"000000000\"\nmarker_7: \"110001011\"\nmarker_8: \"000000011\""

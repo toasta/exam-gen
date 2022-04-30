@@ -2,6 +2,7 @@
 
 \usepackage{scrlayer-scrpage}
 \usepackage{geometry}
+\usepackage{adjustbox}
 \usepackage{wrapfig}
 \usepackage{longtable}
 \usepackage{calc}
@@ -24,9 +25,11 @@ bottom=20mm,
 
 
 {% macro marker(num) %}
-\begin{minipage}{ {{common.marker_width}} }
+%\begin{minipage}{ {{common.marker_width}} }
+\adjustbox{valign=m,raise=-.1em}{
     \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
-\end{minipage}
+    }
+%\end{minipage}
 {% endmacro %}
 
 \ihead{ {{ marker(0) }} }

@@ -143,6 +143,7 @@ def doit():
     basics = {}
 
     names = ["Selabin Deresch", "Testos Teron"]
+    names = ["Selabin Deresch"]
 
     all_sheets = []
 
