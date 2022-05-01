@@ -1,41 +1,47 @@
-\documentclass{extarticle}
+%\documentclass{extarticle}
+\documentclass{scrarticle}
 
 \usepackage{scrlayer-scrpage}
+%\usepackage{textpos}
 \usepackage{geometry}
 \usepackage{adjustbox}
 \usepackage{wrapfig}
 \usepackage{longtable}
 \usepackage{calc}
-\usepackage{multirow}
-\usepackage{multicol}
-\usepackage{tabularx}
-\geometry{
-a4paper,
-left=20mm,
-right=20mm,
-top=20mm,
-bottom=20mm,
-}
+%\usepackage{multirow}
+%\usepackage{multicol}
+%\usepackage{tabularx}
+ \geometry{
+ paper=a4paper,
+ left=10mm,
+ right=10mm,
+ top=10mm,
+ bottom=10mm,
+ marginparwidth=0pt,
+ marginparsep=0pt,
+ includeall,
+ headsep=0em,
+ }
 \usepackage{graphicx}
-\usepackage{amsfonts}
+%\usepackage{amsfonts}
 \usepackage{amssymb}
-\parindent0mm
-\setlength{\footheight}{14pt}
-\setlength{\headheight}{14pt}
+%\parindent0mm
+%\setlength{\footheight}{14pt}
+%\setlength{\headheight}{14pt}
 
 
-{% macro marker(num) %}
-%\begin{minipage}{ {{common.marker_width}} }
-\adjustbox{valign=m,raise=-.1em}{
-    \includegraphics[width={{common.marker_width}}]{common/out/{{num}}.png}
-    }
-%\end{minipage}
+{% macro marker(num, size=common.marker_width) %}
+\adjustbox{valign=m}{
+    \includegraphics[width={{ size }}]{common/out/{{num}}.png}
+}
 {% endmacro %}
 
-\ihead{ {{ marker(0) }} }
-\ohead{ {{ marker(0) }} }
-\ifoot{ {{ marker(0) }} }
-\ofoot{ {{ marker(0) }} }
+\ihead{ {{ marker(0, '2.0em') }} } 
+\ohead{ {{ marker(0, '2.0em') }} } 
+
+\ifoot{ {{ marker(0, '2.0em') }} } 
+\ofoot{ {{ marker(0, '2.0em') }} } 
+
 \cfoot{\pagemark}
 
 
@@ -52,22 +58,23 @@ bottom=20mm,
 
 
 \begin{wrapfigure}{r}{ {{common.main_qr_width}} }
-\includegraphics[width={{common.main_qr_width}}]{{ '{'}}{{ sheet.qr }}}
+    \includegraphics[width={{common.main_qr_width}}]{{ '{'}}{{ sheet.qr }}}
 \end{wrapfigure}
 
-    { \large {{ sheet.name}}} Unterschrift \fbox{\hspace{50mm}\vspace{20mm}}
+\hspace{2em}
+{ \Large {{ sheet.name}} } 
+    Unterschrift \rule{5cm}{.5pt}
 
-%\begin{multicols}{2}[Hinweise: ]
     \begin{itemize}
-    \item Sie koennen die Felder wie es ihnen beliebt markieren: Haeckchen, Kreuze, Kreise, ausmalen.
-    \item alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
+        \item Sie koennen die Felder wie es ihnen beliebt markieren: Haeckchen, Kreuze, Kreise, ausmalen.
+        \item alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
     
-    \item Sollten Sie einen Fehler korrigieren wollen:
-    \begin{itemize}
-    \item Markieren sie, dass ihre Loesung in der naechsten Spalte steht, indem sie das Kaestchen der Spalte markiern.
-    \item Markieren sie in dieser neuen Spalte \textbf{alle} richtigen Loesungen.
-    \item Als von Ihnen eingerichte Loesung gilt immer die am weitesten rechts liegende von Ihnen markierte Spalte.
-    \end{itemize}
+        \item Sollten Sie einen Fehler korrigieren wollen:
+        \begin{itemize}
+            \item Markieren sie, dass ihre Loesung in der naechsten Spalte steht, indem sie das Kaestchen der Spalte markiern.
+            \item Markieren sie in dieser neuen Spalte \textbf{alle} richtigen Loesungen.
+            \item Als von Ihnen eingerichte Loesung gilt immer die am weitesten rechts liegende von Ihnen markierte Spalte.
+        \end{itemize}
     \item Die Barcodes und Marker duerfen nicht veraendert werden.
     \item Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
     \item Vergessen Sie nicht, den Test zu unterschreiben.
@@ -77,7 +84,6 @@ bottom=20mm,
 
 Viel Erfolg!
 
-%\end{multicols}
 
 
 
