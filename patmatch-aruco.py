@@ -221,10 +221,13 @@ if __name__ == '__main__':
     save_debug(_, "markers-unrectified")
 
 
-    sheet = rectify_image(sheet, markers)
-    save_debug(sheet, "rectified")
+    if len(markers[0]) == 4:
+        sheet = rectify_image(sheet, markers)
+        save_debug(sheet, "rectified")
+    else:
+        print(f"WARN: {len(markers[0])} 0markers found; != 4; can't rectfiy image; continuing with unrectified image")
     # reget markers
-    #sheet = cv2.morphologyEx(sheet,cv2.MORPH_CLOSE,(2,2))
+    ##sheet = cv2.morphologyEx(sheet,cv2.MORPH_CLOSE,(2,2))
     #save_debug(sheet, "morph-close")
     markers = get_markers(sheet)
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
@@ -241,19 +244,22 @@ if __name__ == '__main__':
 
     cols = markers[1]
 
-    for i in cols:
+    if 1==0:
         col=mcolor.get(2)
-        cv2.circle(sheet_debug, i, radius=4, color=col, thickness=2)
+        for i in cols:
+            cv2.circle(sheet_debug, i, radius=4, color=col, thickness=2)
 
     if 1==1:
-        for i in qranges:
+        col = mcolor.get(5)
+        for j,i in enumerate(qranges):
+            sd = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
             (yfrom, yto) = (i['yfrom'], i['yto'])
             lines = filter(lambda x: x[1] >= yfrom-10 and x[1] <= yto+10, markers[4])
             for l in lines:
                 for c in cols:
                     p=(c[0], l[1])
-                    col = mcolor.get(2)
-                    cv2.circle(sheet_debug, p, radius=4, color=col, thickness=2)
+                    cv2.circle(sd, p, radius=4, color=col, thickness=2)
+            save_debug(sd, f"marker-question-{j}")
 
     save_debug(sheet_debug, "markers")
     cv2.imwrite("debug/sheet.png", sheet_debug)
