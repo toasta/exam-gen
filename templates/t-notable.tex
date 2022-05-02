@@ -6,11 +6,10 @@
 \usepackage{geometry}
 \usepackage{adjustbox}
 \usepackage{wrapfig}
-\usepackage{longtable}
 \usepackage{calc}
 %\usepackage{multirow}
 %\usepackage{multicol}
-%\usepackage{tabularx}
+\usepackage{tabulary}
  \geometry{
  paper=a4paper,
  left=10mm,
@@ -30,11 +29,9 @@
 %\setlength{\headheight}{14pt}
 
 
-{% macro marker(num, size=common.marker_width) %}
-\adjustbox{valign=m}{
-    \includegraphics[width={{ size }}]{common/out/{{num}}.png}
-}
-{% endmacro %}
+{%- macro marker(num, size=common.marker_width) %}
+\adjustbox{valign=m}{ \includegraphics[width={{ size }}]{common/out/{{num}}.png} }
+{%- endmacro %}
 
 \ihead{ {{ marker(0, '2.0em') }} } 
 \ohead{ {{ marker(0, '2.0em') }} } 
@@ -53,7 +50,7 @@
 
 
 \iffalse
-{{ sheet.json_readable }}
+{# {{ sheet.json_readable }} #}
 \fi
 
 
@@ -66,6 +63,7 @@
     Unterschrift \rule{5cm}{.5pt}
 
     \begin{itemize}
+        \item Die Barcodes und Marker duerfen nicht veraendert werden.
         \item Sie koennen die Felder wie es ihnen beliebt markieren: Haeckchen, Kreuze, Kreise, ausmalen.
         \item alle Fragen koennen mehrere oder auch keine richtige Antwort haben.
     
@@ -75,68 +73,58 @@
             \item Markieren sie in dieser neuen Spalte \textbf{alle} richtigen Loesungen.
             \item Als von Ihnen eingerichte Loesung gilt immer die am weitesten rechts liegende von Ihnen markierte Spalte.
         \end{itemize}
-    \item Die Barcodes und Marker duerfen nicht veraendert werden.
-    \item Den Bereich rechts der Marker jeder Frage duerfen Sie beschreiben.
+    \item Den freien Bereich rechts jeder Frage duerfen Sie beschreiben.
     \item Vergessen Sie nicht, den Test zu unterschreiben.
     \item Antwortmoeglichkeiten sind nicht auf mehrere Seiten aufgeteilt.
     \item Beachten sie eine moegliche Rueckseite.
 \end{itemize}
 
 Viel Erfolg!
+\vspace{3em}
 
 
 
 
 
-\begin{longtable}[l]{p{10cm} |  c c c | l }
+{% for i in sheet.questions %}
+    \vbox{
+    {% if not loop.first %}
+    \vspace{2em}
+    {% endif %}
+    ({{i.points}}P) \textbf{ {{ i.q }}}
+    \vspace{1em}
 
-    {% for jj in range(3) %}
-        & {{ marker(1) }}
-    {% endfor %}
-    \endhead
-    
-    {% for i in sheet.questions %}
-        {% if not loop.first %}
-        \\*
-        {% endif %}
-        \multicolumn{5}{l}{
-            ({{i.points}}P) \textbf{ {{ i.q }}}
-        }
-        \\*
-        \\*
-        {{ marker(2) }}
-            & $\boxtimes$
-
-                {% for jj in range(2) %}
-                        & $\square$
-                {% endfor %}
-
-                    & {{ marker(4) }}
-                    \\*
-
-                {% for j in i.a %}
-                %\noindent\parbox[c]{\hsize}{ {{ j }} }
-                {{ j }} 
-
-                    {% for i in range(3) %}
-                        & $\square$
-                    {%- endfor %}
-
-                    &  {{ marker(4) }} 
-
-                     {% if loop.last %}
-                        {{ marker(3) }} \\
-                     {% else %}
-                    \\*
-                     {% endif %}
-
-                {% endfor %}
-    {% endfor %}
-    \end{longtable}
+    \tymax=.6\textwidth
+    \begin{tabulary}{.9\textwidth}{R | c c c | l }
+            {{ marker(2) }}
+            & {{ marker(1) }}
+            & {{ marker(1) }}
+            & {{ marker(1) }}
+        \\
+        \hline
+        & $\boxtimes$
+        & $\square$
+        & $\square$
+        & {{ marker(4) }} \\
+                    {% for j in i.a -%}
+                        {{ j }} 
+                        {%- for i in range(3) %}
+                            & $\square$
+                        {% endfor %}
+                        &  {{ marker(4) }} 
+                         {% if loop.last %}
+                            {{ marker(3) }} 
+                         {% endif %}
+                        \\
+                    {% endfor %}
+    \end{tabulary}
+    }
+{% endfor %}
 
 
     \cleardoublepage
     
 {% endfor %}
+{# persons #}
 
 \end{document}

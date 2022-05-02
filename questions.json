@@ -98,6 +98,46 @@
          ]
      },
      {
+         "q": "Was versteht man unter SQL?",
+         "points": 1,
+         "a": [
+             { "ap": "eine Datenbanksprache", "sol": true },
+             { "ap": "eine Bildbearbeitungssoftware" },
+             { "ap": "ein Textverarbeitungsprogramm" },
+             { "ap": "eine Tabellenkalkulationssoftware" }
+         ]
+     },
+     {
+         "q": "Wie wird die Reihe richtig fortgesetzt? 27, 28, 26, 29, 25, 30, 24",
+         "points": 1,
+         "a": [
+             { "ap": "31", "sol": true },
+             { "ap": "30"},
+             { "ap": "32"},
+             { "ap": "33"}
+         ]
+     },
+     {
+         "q": "Wie wird die Reihe richtig fortgesetzt? 11, 14, 7, 10, 5, 8, 4",
+         "points": 1,
+         "a": [
+             { "ap": "7", "sol": true },
+             { "ap": "4"},
+             { "ap": "5"},
+             { "ap": "6"}
+         ]
+     },
+     {
+         "q": "Welche Funktion übernimmt ein Cache-Speicher?",
+         "points": 1,
+         "a": [
+             { "ap": "Schnellere Zugriffsmöglichkeit auf Inhalte, die bereits einmal vorlagen", "sol": true},
+             { "ap": "Schnelle Ausführung von mathematischen Funktionen und Verarbeitung von Gleitkommazahlen" },
+             { "ap": "Schnelle Ansteuerung des RAMs" },
+             { "ap": "Steuerung der Anzeigen" }
+         ]
+     },
+     {
          "q": "Wieviele Werte kann ein Byte haben?",
          "points": 1,
          "a": [

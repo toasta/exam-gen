@@ -110,13 +110,12 @@ def gen_one_question_block(i, key=None):
         points_unchecked = 0
 
         # FIXME -- something wrong w/ points_unchecked
-        if j['sol'] == True:
+        if j.get('sol', False) == True:
             points_checked      = (factor * +1)
             points_unchecked    = 0
             if not nofalse:
                 points_unchecked = 0
-
-        if j['sol'] == False:
+        else:
             points_checked      = (factor * -1)
             points_unchecked    = 0
             if not nofalse:
