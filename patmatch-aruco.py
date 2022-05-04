@@ -186,8 +186,12 @@ def get_question_ranges(sheet, markers):
     return ret
 
 
+save_debug_number=0
 def save_debug(img, what):
-    cv2.imwrite("debug/" + what + ".png", img)
+    global save_debug_number
+    cv2.imwrite("debug/" + str(save_debug_number) + "-" + what + ".png", img)
+    save_debug_number += 1
+
     
 def draw_markers(img, markers):
     a=img.copy()
@@ -197,7 +201,6 @@ def draw_markers(img, markers):
     for i,j in markers.items():
         for k in j:
             col=mcolor.get(i)
-            print(f'{col=}')
             cv2.circle(a, k, radius=5, color=col, thickness=3)
     return a
 
@@ -217,28 +220,6 @@ if __name__ == '__main__':
     barcode = get_barcode(sheet)
     markers = get_markers(sheet)
 
-    _, _bw_master = cv2.threshold(
-        cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB),
-        192, 255, cv2.THRESH_BINARY
-        )
-    save_debug(_bw_master, "bw-master")
-
-    _bw_master = -1 * _bw_master
-
-    ex_kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3,3))
-    _bw_master = cv2.morphologyEx(_bw_master,
-        cv2.MORPH_CLOSE,(2,2),
-        )
-    _bw_master = -1 * _bw_master
-    save_debug(_bw_master, "morph-close")
-    _bw_master = -1 * _bw_master
-    _bw_master = cv2.dilate(_bw_master, ex_kernel, iterations=2)
-    _bw_master = -1 * _bw_master
-    save_debug(_bw_master, "morph-dilate")
-
-    sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
-    _ = draw_markers(sheet_debug, markers)
-    save_debug(_, "markers-unrectified")
 
 
     if len(markers[0]) == 4:
@@ -247,7 +228,26 @@ if __name__ == '__main__':
         markers = get_markers(sheet)
     else:
         print(f"WARN: {len(markers[0])} 0markers found; != 4; can't rectfiy image; continuing with unrectified image")
-    # reget markers
+
+    _, _bw_master = cv2.threshold(
+        cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB),
+        192, 255, cv2.THRESH_BINARY
+        )
+    _bw_master = cv2.cvtColor(_bw_master,cv2.COLOR_RGB2GRAY)
+    save_debug(_bw_master, "bw")
+
+    bw_master = _bw_master.copy()
+    #bw_master = bw_master * -1
+    ex_kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (4,4))
+    bw_master = bw_master * -1
+    bw_master = cv2.dilate(bw_master, ex_kernel, iterations=2)
+    bw_master = bw_master * -1
+    save_debug(bw_master, "bw-dilate")
+
+    #bw_master = cv2.morphologyEx(bw_master, cv2.MORPH_CLOSE,(3,3),)
+    ##bw_master = bw_master * -1
+    #save_debug(bw_master, "bw-close")
+
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     for i,j in markers.items():
@@ -257,8 +257,6 @@ if __name__ == '__main__':
 
     qranges = get_question_ranges(sheet, markers)
     print(qranges)
-
-
 
     cols = markers[1]
 
@@ -271,16 +269,38 @@ if __name__ == '__main__':
         col = mcolor.get(5)
         c_checked = mcolor.get(6)
         c_unchecked = mcolor.get(7)
-        sd = _sheet.copy()
             
         for j,i in enumerate(qranges):
+            sd = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+            #sd2 = cv2.cvtColor(bw_master,cv2.COLOR_GRAY2RGB)
+            #sd2 = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
+            sd2 = bw_master.copy()
+            print(sd2.shape)
+            sd2 = np.uint8(sd2)
+            print(sd2.shape)
+            #sd2 = sd2 * -1
+            sd2 = cv2.cvtColor(sd2,cv2.COLOR_GRAY2RGB)
+
             (yfrom, yto) = (i['yfrom'], i['yto'])
-            lines = filter(lambda x: x[1] >= yfrom-10 and x[1] <= yto+10, markers[4])
+            print(f'question {j} range {yfrom} <= y <= {yto}')
+            lines = list(filter(lambda x: x[1] >= yfrom-10 and x[1] <= yto+10, markers[4]))
+            cols =  list(filter(lambda x: x[1] >= yfrom-10 and x[1] <= yfrom+10, markers[1]))
             square = 20
+
+            color=mcolor.get(4)
+            print(f'{lines=}')
+            for i in lines:
+                cv2.circle(sd2, i, radius=square//2, color=color, thickness=2)
+
+            color=mcolor.get(1)
+            print(f'{cols=}')
+            for i in cols:
+                cv2.circle(sd2, i, radius=square//2, color=color, thickness=2)
+
             for l in lines:
                 for c in cols:
                     p=(c[0], l[1])
-                    cv2.circle(sd, p, radius=square//2, color=col, thickness=2)
+                    print(f'checking {p} for mark')
 
                     avg = int(np.average(_bw_master[
                         int(p[1]+square/-2):int(p[1]+square/2),
@@ -288,23 +308,30 @@ if __name__ == '__main__':
                     ]))
                     checked=False
                     print(f'avg gray value @ {p} = {avg}')
-                    if avg < 220:
+                    if avg < 180:
                         checked=True
 
                     cc=c_unchecked
                     str2 = "U"
+                    rad=4
                     if checked:
+                        rad=9
                         cc=c_checked
                         str2 = "C"
-                    shift_right=30
-                    if checked:
-                        cv2.circle(sd, (p[0]+shift_right, p[1]),
-                            radius=4, color=cc, thickness=2
-                        )
+                    shift_right=400
+
+                    cc2=mcolor.get(1)
+                    cv2.circle(sd2, (p[0], p[1]),
+                        radius=square//2, color=cc2, thickness=3
+                    )
+
+                    cv2.circle(sd2, (p[0]+shift_right, p[1]),
+                        radius=rad, color=cc, thickness=2
+                    )
                     font = cv2.FONT_HERSHEY_SIMPLEX
-                    cv2.putText(sd, f'{str2}{avg}', (p[0]+shift_right, p[1]), font, 1, 0)
-                    shift_right=30
-        save_debug(sd, f"checked")
+                    #cv2.putText(sd2, f'{str2}{avg}', (p[0]+shift_right, p[1]), font, 1, 0)
+                    cv2.putText(sd2, f'{avg}', (p[0]+shift_right*2, p[1]), font, 1, 0)
+            save_debug(sd2, f"qrange-{j}")
 
     save_debug(sheet_debug, "markers")
     cv2.imwrite("debug/sheet.png", sheet_debug)
