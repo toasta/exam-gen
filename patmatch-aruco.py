@@ -17,14 +17,13 @@ SECTION="DEFAULT"
 
 
 
-mcolor = Mcolor.Mcolor()
+mcolor = Mcolor.Mcolor(angle_increment=360/10)
 
 def get_markers(img, debug=False):
 
     # 0 => page corners
     # 1 => columns
-    # 2 => begin answers
-    # 3 => end answers
+    # 2 => qmarker
     # 4 => line
     #
     a = np.load('common/cd.npz')
@@ -174,14 +173,14 @@ def rectify_image(sheet, markers):
 
 
 def get_question_ranges(sheet, markers):
-    begin   = sorted(markers[2], key=lambda x: x[1])
-    end     = sorted(markers[3], key=lambda x: x[1])
+    begin   = sorted(markers, key=lambda x: x[1])
+    print(f"qrange markers: {begin}")
 
-    print(f'got {len(begin)=} begin markers, {len(end)} end markers')
-    assert(len(begin) == len(end))
     ret=[]
-    for (i,j) in enumerate(begin):
-        ret.append({"yfrom": begin[i][1], 'yto': end[i][1]})
+    for i in range(len(begin)-1):
+        ret.append({"yfrom": begin[i][1], 'yto': begin[i+1][1]})
+
+    ret.append({"yfrom": begin[-1][1], 'yto': sheet.shape[0]})
 
     return ret
 
@@ -251,22 +250,15 @@ if __name__ == '__main__':
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     for i,j in markers.items():
+        col=mcolor.get(i)
         for k in j:
-            col=mcolor.get(i)
             cv2.circle(sheet_debug, k, radius=6, color=col, thickness=4)
 
-    qranges = get_question_ranges(sheet, markers)
-    print(qranges)
+    qranges = get_question_ranges(sheet, markers[2])
 
-    cols = markers[1]
-
-    if 1==0:
-        col=mcolor.get(2)
-        for i in cols:
-            cv2.circle(sheet_debug, i, radius=4, color=col, thickness=2)
 
     if 1==1:
-        col = mcolor.get(5)
+        col = mcolor.get(1)
         c_checked = mcolor.get(6)
         c_unchecked = mcolor.get(7)
             
@@ -282,9 +274,15 @@ if __name__ == '__main__':
             sd2 = cv2.cvtColor(sd2,cv2.COLOR_GRAY2RGB)
 
             (yfrom, yto) = (i['yfrom'], i['yto'])
+
+            print(f'all cols: {markers[1]}')
+            print('=======================================')
             print(f'question {j} range {yfrom} <= y <= {yto}')
-            lines = list(filter(lambda x: x[1] >= yfrom-10 and x[1] <= yto+10, markers[4]))
-            cols =  list(filter(lambda x: x[1] >= yfrom-10 and x[1] <= yfrom+10, markers[1]))
+            lines = list(filter(lambda x: x[1] >= yfrom+1 and x[1] <= yto+10, markers[4]))
+            print(f'{lines=}')
+            cols =  list(filter(lambda x: x[1] >= yfrom+1 and x[1] <= yto+10, markers[1]))
+            print(f'{cols=}')
+            print('=======================================')
             square = 20
 
             color=mcolor.get(4)

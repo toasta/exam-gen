@@ -1,20 +1,15 @@
-import cv2
-import numpy as np
+import colorsys
 
 class Mcolor:
-    def __init__(self,
-        basecolor=[3,7,255],
-        angle_increment=360/5):
+    def __init__(self, basecolor=[0,0,1], angle_increment=360/5):
 
-        self.bc = cv2.cvtColor(
-            np.uint8([[basecolor]]),
-            cv2.COLOR_RGB2HSV
-            )[0][0]
+        self.bc = colorsys.rgb_to_hsv(*basecolor)
         self.angle_increment = angle_increment
+
     def get(self, it):
         _ = self.bc
-        _[0] += self.angle_increment * it
-        return cv2.cvtColor([[_]], cv2.COLOR_HSV2RGB)
+        tmp = colorsys.hsv_to_rgb(_[0] + self.angle_increment*it, _[1], _[2])
+        return [ int(_ * 255) for _ in tmp]
 
 if __name__ == "__main__":
     m = Mcolor()
