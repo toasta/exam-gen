@@ -100,14 +100,14 @@ Viel Erfolg!
             & {{ marker(1) }}
             & {{ marker(1) }}
         \\
-        & \adjustbox{valign=m}{$\boxtimes$}
-        & \adjustbox{valign=m}{$\square$}
-        & \adjustbox{valign=m}{$\square$}
+        &  {{ marker('pos_checked') }} 
+        &  {{ marker('pos_empty') }} 
+        &  {{ marker('pos_empty') }} 
         & {{ marker(4) }} \\
                     {% for j in i.a -%}
                         {{ j }} 
                         {%- for i in range(3) -%}
-                            & $\square$
+                        &  {{ marker('pos_empty') }} 
                         {%- endfor -%}
                         &  {{ marker(4) }} 
                         \\
