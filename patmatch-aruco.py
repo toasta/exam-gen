@@ -301,11 +301,17 @@ if __name__ == '__main__':
                 for c in cols:
                     p=(c[0], l[1])
                     print(f'checking {p} for mark')
-
-                    avg = int(np.average(_bw_master[
+                    tmp = _bw_master[
                         int(p[1]+square/-2):int(p[1]+square/2),
                         int(p[0]+square/-2):int(p[0]+square/2),
-                    ]))
+                    ]
+                    tmp[tmp > 0] = 1
+
+                    avg = np.average(tmp)
+                    print(f'********************')
+                    print(tmp)
+                    print(avg)
+                    print(f'********************')
                     checked=False
                     print(f'avg gray value @ {p} = {avg}')
                     if avg < 180:

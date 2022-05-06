@@ -30,7 +30,7 @@
 
 
 {%- macro marker(num, size=common.marker_width) %}
-\adjustbox{valign=m}{ \includegraphics[width={{ size }}]{common/out/{{num}}.png} }
+\adjustbox{valign=m,noindent}{\includegraphics[width={{ size }}]{common/out/{{num}}.png}}
 {%- endmacro %}
 
 \ihead{ {{ marker(0, '2.0em') }} } 
@@ -91,30 +91,25 @@ Viel Erfolg!
     {% if not loop.first %}
     \vspace{2em}
     {% endif %}
-    ({{i.points}}P) \textbf{ {{ i.q }}}
+    ({{i.points}}P) \textbf{ {{ i.q }}} \hfill {{ marker(2) }}
     \vspace{1em}
 
     \tymax=.6\textwidth
-    \begin{tabulary}{.9\textwidth}{R | c c c | l }
-            {{ marker(2) }}
+    \begin{tabulary}{.9\textwidth}{R | c c c | c }
             & {{ marker(1) }}
             & {{ marker(1) }}
             & {{ marker(1) }}
         \\
-        \hline
-        & $\boxtimes$
-        & $\square$
-        & $\square$
+        & \adjustbox{valign=m}{$\boxtimes$}
+        & \adjustbox{valign=m}{$\square$}
+        & \adjustbox{valign=m}{$\square$}
         & {{ marker(4) }} \\
                     {% for j in i.a -%}
                         {{ j }} 
-                        {%- for i in range(3) %}
+                        {%- for i in range(3) -%}
                             & $\square$
-                        {% endfor %}
+                        {%- endfor -%}
                         &  {{ marker(4) }} 
-                         {% if loop.last %}
-                            {{ marker(3) }} 
-                         {% endif %}
                         \\
                     {% endfor %}
     \end{tabulary}
