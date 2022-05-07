@@ -11,12 +11,20 @@ import sys
 import struct
 import lzma
 
+from common import get_key
+
 import configparser
 
+CFG = configparser.ConfigParser()
+CFG.read('secrets.ini')
+SECTION="DEFAULT"
+PKEY_KEY = bytes.fromhex(CFG[SECTION]['PKEY_KEY'])
 
 CFG = configparser.ConfigParser()
 CFG.read('config.ini')
 SECTION="DEFAULT"
+
+INIT_LEN_BYTES = CFG[SECTION]['INIT_LEN_BYTES']
 
 
 env = jinja2.Environment(
@@ -31,18 +39,12 @@ q=json.load(open('questions.json'))
 ret = []
 
 
-PKEY_KEY = bytes.fromhex('135762ba0049cf6727b211732fdfaf202718762539d1e115dda0abeb2ab71792')
-
 TMPD='/dev/shm/tmp1/'
 os.makedirs(TMPD, exist_ok=True)
 
 def grh(b):
     c = secrets.token_bytes(b)
     return c
-
-def get_key(b):
-    h = hashlib.blake2b(b, key=PKEY_KEY, digest_size=256//8).digest()
-    return h
 
 def get_iv():
     h = secrets.token_bytes(int(CFG[SECTION]['IV_LEN_BITS'])//8)
@@ -148,8 +150,8 @@ def doit():
 
 
     for name in names:
-        init=grh(16)
-        key=get_key(init)
+        init=grh(INIT_LEN_BYTES)
+        key=get_key(init, PKEY_KEY)
 
         this_sheet = {}
         this_sheet['name'] = name

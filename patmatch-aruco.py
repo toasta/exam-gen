@@ -8,18 +8,36 @@ import cv2
 import cv2.aruco
 
 from pyzbar import pyzbar
-from lib import Mcolor
+
+from common import get_key
+
+SECTION="DEFAULT"
+CFG = configparser.ConfigParser()
+CFG.read('secrets.ini')
+PKEY_KEY = bytes.fromhex(CFG[SECTION]['PKEY_KEY'])
+
 
 CFG = configparser.ConfigParser()
 CFG.read('config.ini')
-SECTION="DEFAULT"
 
 
 
 
-mcolor = Mcolor.Mcolor(angle_increment=360/10)
+mcolors = ['#ffffd9','#edf8b1','#c7e9b4','#7fcdbb','#41b6c4','#1d91c0','#225ea8','#253494','#081d58']
+
+tmp = []
+for i in mcolors:
+    r=int(i[1:3], 16)
+    g=int(i[3:5], 16)
+    b=int(i[5:7], 16)
+    tmp.append((r, g, b))
+mcolors = tmp
+del tmp
+
+marker_size = []
 
 def get_markers(img, debug=False):
+    global marker_size
 
     # 0 => page corners
     # 1 => columns
@@ -63,9 +81,15 @@ def get_markers(img, debug=False):
 
     markers = {}
 
+    tmp = {}
 
     for (mc, _id) in zip(corners, ids):
         (tl, tr, br, bl) = mc.reshape((4, 2))
+        if _id not in tmp.keys():
+            tmp[_id] = []
+
+        tmp[_id].append(tr[0]-tl[0])
+
         x = int((tl[0] + br[0]) / 2)
         y = int((tr[1] + bl[1]) / 2)
 
@@ -74,11 +98,26 @@ def get_markers(img, debug=False):
 
         markers[_id].append((x, y))
         if debug:
-            col=mcolor.get(_id)
+            col=mcolors[_id]
             cv2.circle(sheet_debug, (x, y), radius=4, color=col, thickness=2)
 
-    #print(corners, ids, rejected)
+    marker_size = [None for i in range(len(markers.keys())+1)]
+    print(tmp)
+    print(marker_size)
+    for (i,j) in tmp.items():
+        marker_size[i] = int(sum(j) / len(j) / 2 * .6)
+
     return markers
+
+def decode_barcode(bcdata):
+
+    bindata=bytearray(bcdata)
+    options = bindata[0]
+    packed = False
+    if options & (1<<0):
+        packed = True
+
+
 
 def get_barcode(sheet):
 
@@ -92,7 +131,7 @@ def get_barcode(sheet):
     if 1==0:
         for i,_p in enumerate(barcode.polygon):
             p = (_p.x, _p.y)
-            col=mcolor.get(i)
+            col=mcolors[i]
             cv2.circle(sheet_debug, p, radius=3, color=col, thickness=9)
             #print(f'i is {i}, color is {colors[i]}')
     return barcode
@@ -150,7 +189,7 @@ def rectify_image(sheet, markers):
 
     if 1==0:
         for i,j in enumerate(src_pos):
-            col=mcolor.get(i)
+            col=mcolors[i]
             cv2.circle(dbg1, j, radius=3, color=col, thickness=9)
         cv2.imwrite("debug/rect-corners.png", dbg1)
 
@@ -199,7 +238,7 @@ def draw_markers(img, markers):
         return
     for i,j in markers.items():
         for k in j:
-            col=mcolor.get(i)
+            col=mcolors[i]
             cv2.circle(a, k, radius=5, color=col, thickness=3)
     return a
 
@@ -250,7 +289,7 @@ if __name__ == '__main__':
     sheet_debug = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
 
     for i,j in markers.items():
-        col=mcolor.get(i)
+        col=mcolors[i]
         for k in j:
             cv2.circle(sheet_debug, k, radius=6, color=col, thickness=4)
 
@@ -258,10 +297,11 @@ if __name__ == '__main__':
 
 
     if 1==1:
-        col = mcolor.get(1)
-        c_checked = mcolor.get(6)
-        c_unchecked = mcolor.get(7)
+        col         = mcolors[1]
+        c_checked   = mcolors[6]
+        c_unchecked = mcolors[7]
             
+        #global marker_size
         for j,i in enumerate(qranges):
             sd = cv2.cvtColor(sheet,cv2.COLOR_GRAY2RGB)
             #sd2 = cv2.cvtColor(bw_master,cv2.COLOR_GRAY2RGB)
@@ -283,25 +323,26 @@ if __name__ == '__main__':
             cols =  list(filter(lambda x: x[1] >= yfrom+1 and x[1] <= yto+10, markers[1]))
             print(f'{cols=}')
             print('=======================================')
-            square = 20
+            #print(marker_size)
+            square = marker_size[1]
 
-            color=mcolor.get(4)
+            color=mcolors[4]
             print(f'{lines=}')
             for i in lines:
-                cv2.circle(sd2, i, radius=square//2, color=color, thickness=2)
+                cv2.circle(sd2, i, radius=square, color=color, thickness=2)
 
-            color=mcolor.get(1)
+            color=mcolors[1]
             print(f'{cols=}')
             for i in cols:
-                cv2.circle(sd2, i, radius=square//2, color=color, thickness=2)
+                cv2.circle(sd2, i, radius=square, color=color, thickness=2)
 
             for l in lines:
                 for c in cols:
                     p=(c[0], l[1])
                     print(f'checking {p} for mark')
                     tmp = _bw_master[
-                        int(p[1]+square/-2):int(p[1]+square/2),
-                        int(p[0]+square/-2):int(p[0]+square/2),
+                        int(p[1]-square):int(p[1]+square),
+                        int(p[0]-square):int(p[0]+square),
                     ]
                     tmp[tmp > 0] = 1
 
@@ -312,7 +353,7 @@ if __name__ == '__main__':
                     print(f'********************')
                     checked=False
                     print(f'avg gray value @ {p} = {avg}')
-                    if avg < 180:
+                    if avg < .9:
                         checked=True
 
                     cc=c_unchecked
@@ -324,17 +365,16 @@ if __name__ == '__main__':
                         str2 = "C"
                     shift_right=400
 
-                    cc2=mcolor.get(1)
+                    cc2=mcolors[6]
                     cv2.circle(sd2, (p[0], p[1]),
-                        radius=square//2, color=cc2, thickness=3
+                        radius=square, color=cc2, thickness=1
                     )
 
                     cv2.circle(sd2, (p[0]+shift_right, p[1]),
                         radius=rad, color=cc, thickness=2
                     )
                     font = cv2.FONT_HERSHEY_SIMPLEX
-                    #cv2.putText(sd2, f'{str2}{avg}', (p[0]+shift_right, p[1]), font, 1, 0)
-                    cv2.putText(sd2, f'{avg}', (p[0]+shift_right*2, p[1]), font, 1, 0)
+                    cv2.putText(sd2, f'{avg:.1f}', (p[0]+shift_right*2, p[1]), font, 1, 0)
             save_debug(sd2, f"qrange-{j}")
 
     save_debug(sheet_debug, "markers")
