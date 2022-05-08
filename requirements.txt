@@ -6,3 +6,6 @@ numpy
 imageio
 pyzbar
 opencv-contrib-python-headless
+protobuf
+qrcode[pil]
+base91

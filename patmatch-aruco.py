@@ -3,8 +3,13 @@ import configparser
 import json
 import lzma
 import subprocess
+import base64
 
 import numpy as np
+
+import mprotos.main_pb2 as main_pb2
+
+
 
 import cv2
 import cv2.aruco
@@ -115,36 +120,19 @@ def get_markers(img, debug=False):
 
 def decode_barcode(bcdata):
 
-    bindata=bcdata
-    print(bindata)
-    options = bindata[0]
-    print(f'option byte {options=}')
-    beg=1
-    end=beg+INIT_LEN_BYTES
-    init = bindata[beg:end]
-    print(f'init bytes {beg=} to {end=} {init=}')
-    beg = end
-    end = beg+IV_LEN_BITS//8
-    print(f"getting iv data {beg=}, {end=}")
-    iv = bindata[beg:end]
-    print(f'iv bytes {beg=} to {end=} {iv=}')
-    beg = end
-    crypted=bindata[beg:]
-    #print(f'crypted bytes {beg=} {crypted=}')
+    o = main_pb2.mainData()
+    o.ParseFromString(base64.b85decode(bcdata))
 
-    packed = False
-    if options & (1<<0):
-        packed = True
+    init = o.init
+    iv = o.iv
 
+    print(f"got {init=}, {iv=}")
 
     key = get_key(init, PKEY_KEY)
     cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
-    print(f"running {cmd=}")
-    res=subprocess.run(cmd, capture_output=True, input=crypted)
+    res=subprocess.run(cmd, capture_output=True, input=o.data)
     data=res.stdout
-    #print(f'decrypted {data=}')
-    if packed:
-        data=lzma.decompress(data)
+    data=lzma.decompress(data)
     print(data)
     sys.exit(1)
 
@@ -154,6 +142,7 @@ def decode_barcode(bcdata):
 
 def get_barcode(sheet):
 
+    #barcodes = pyzbar.decode(sheet, symbols=[pyzbar.ZBarSymbol.QRCODE], binary=True)
     barcodes = pyzbar.decode(sheet, symbols=[pyzbar.ZBarSymbol.QRCODE])
     assert(len(barcodes) == 1)
     barcode = barcodes[0]

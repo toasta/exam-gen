@@ -10,6 +10,10 @@ import os
 import sys
 import struct
 import lzma
+import base64
+
+import mprotos.main_pb2 as main_pb2
+import qrcode
 
 from common import get_key
 
@@ -52,46 +56,37 @@ def get_iv():
 
 
 def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
+    # python/zbar is so broken w/ binary data; encoding works fine;
+    # but none can decode it. using the fork with the exposed
+    # binary=True flag doesnt even decode anything.
     iv = get_iv()
-    _a = json.dumps(obj)
-    a = _a.encode('utf8')
+    zipped = lzma.compress(json.dumps(obj).encode('utf8'))
 
-    print(f"qrcode: {iv=}, {key=}, {init=}")
-    print(f"qrcode: {iv.hex()=}, {key.hex()=}, {init.hex()=}")
+    o = main_pb2.mainData()
 
-    # compressing before encryption unsafe?
-    # compressing crypted does not make sense, should be fullu random // full entropy
-    #
-    o2 = {}
-
-    options = 0
-
-    zipped = lzma.compress(a)
-
-    if len(zipped) < len(a):
-        print(f"lzma size {len(zipped)} < {len(a)}, using compressed form; {len(zipped)/len(a):.2f}")
-        options = options | (1 << 0)
-        a = zipped
+    o.iv = iv
+    o.init = init
 
     cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
-    res=subprocess.run(cmd, capture_output=True, input=a)
-    crypted=res.stdout
+    res=subprocess.run(cmd, capture_output=True, input=zipped)
+    o.data = res.stdout
 
-    o2['iv'] = iv
-    o2['options'] = options.to_bytes(1, byteorder='big')
-    o2['init'] = init
-    o2['c'] = crypted
+    oo2 = o.SerializeToString()
+    ddata = base64.b85encode(oo2)
 
-    cmd=['qrencode', 
-        '--type', 'png',
-        '--output', of,
-        '--dpi', '600',
-        '--size', '1',
-        '--margin', '4',
-        '--8bit',
-        ]
-    r = subprocess.run(cmd, input=json.dumps(o2), capture_output=True, check=True)
-    print(r)
+    qr = qrcode.QRCode( 
+        box_size = 1,
+        border=2,
+        version=None
+    )
+
+    qr.add_data(ddata)
+    qr.make(fit=True)
+
+    im = qr.make_image()
+    im.save(of)
+
+
     return True
 
 def gen_one_question_block(i, key=None):
@@ -100,7 +95,6 @@ def gen_one_question_block(i, key=None):
     tmp_latex = {
         'q': i['q'],
         'points': points,
-        'qr': None,
         'a': []
     }
 
@@ -157,7 +151,6 @@ def doit():
 
         this_sheet = {}
         this_sheet['name'] = name
-        this_sheet['qr'] = None
         this_sheet['questions'] = []
 
         
