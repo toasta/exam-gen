@@ -2,3 +2,4 @@ common/static-qrs/*
 config.ini
 out/*
 secrets.ini
+__pycache__
