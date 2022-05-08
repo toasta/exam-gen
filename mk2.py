@@ -24,7 +24,7 @@ CFG = configparser.ConfigParser()
 CFG.read('config.ini')
 SECTION="DEFAULT"
 
-INIT_LEN_BYTES = CFG[SECTION]['INIT_LEN_BYTES']
+INIT_LEN_BYTES = int(CFG[SECTION]['INIT_LEN_BYTES'])
 
 
 env = jinja2.Environment(
@@ -53,32 +53,34 @@ def get_iv():
 
 def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
     iv = get_iv()
-    cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
     _a = json.dumps(obj)
     a = _a.encode('utf8')
 
+    print(f"qrcode: {iv=}, {key=}, {init=}")
+    print(f"qrcode: {iv.hex()=}, {key.hex()=}, {init.hex()=}")
+
     # compressing before encryption unsafe?
     # compressing crypted does not make sense, should be fullu random // full entropy
+    #
+    o2 = {}
 
     options = 0
 
     zipped = lzma.compress(a)
 
     if len(zipped) < len(a):
-        print(f"lzma size {len(zipped)} < {len(a)}, using compressed form; {len(zipped)/len(a)}")
+        print(f"lzma size {len(zipped)} < {len(a)}, using compressed form; {len(zipped)/len(a):.2f}")
         options = options | (1 << 0)
         a = zipped
 
+    cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
     res=subprocess.run(cmd, capture_output=True, input=a)
     crypted=res.stdout
 
-    bindata = bytearray()
-
-    bindata.extend(options.to_bytes(1, byteorder='big'))
-    bindata.extend(init)
-    bindata.extend(iv)
-    bindata.extend(crypted)
-
+    o2['iv'] = iv
+    o2['options'] = options.to_bytes(1, byteorder='big')
+    o2['init'] = init
+    o2['c'] = crypted
 
     cmd=['qrencode', 
         '--type', 'png',
@@ -88,7 +90,7 @@ def jsonify_encrypt_qrcode(obj=None, key=None, of=None, init=None):
         '--margin', '4',
         '--8bit',
         ]
-    r = subprocess.run(cmd, input=bindata, capture_output=True, check=True)
+    r = subprocess.run(cmd, input=json.dumps(o2), capture_output=True, check=True)
     print(r)
     return True
 

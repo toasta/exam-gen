@@ -1,6 +1,8 @@
 import sys
 import configparser
 import json
+import lzma
+import subprocess
 
 import numpy as np
 
@@ -19,6 +21,8 @@ PKEY_KEY = bytes.fromhex(CFG[SECTION]['PKEY_KEY'])
 
 CFG = configparser.ConfigParser()
 CFG.read('config.ini')
+INIT_LEN_BYTES = int(CFG[SECTION]['INIT_LEN_BYTES'])
+IV_LEN_BITS = int(CFG[SECTION]['IV_LEN_BITS'])
 
 
 
@@ -111,11 +115,40 @@ def get_markers(img, debug=False):
 
 def decode_barcode(bcdata):
 
-    bindata=bytearray(bcdata)
+    bindata=bcdata
+    print(bindata)
     options = bindata[0]
+    print(f'option byte {options=}')
+    beg=1
+    end=beg+INIT_LEN_BYTES
+    init = bindata[beg:end]
+    print(f'init bytes {beg=} to {end=} {init=}')
+    beg = end
+    end = beg+IV_LEN_BITS//8
+    print(f"getting iv data {beg=}, {end=}")
+    iv = bindata[beg:end]
+    print(f'iv bytes {beg=} to {end=} {iv=}')
+    beg = end
+    crypted=bindata[beg:]
+    #print(f'crypted bytes {beg=} {crypted=}')
+
     packed = False
     if options & (1<<0):
         packed = True
+
+
+    key = get_key(init, PKEY_KEY)
+    cmd=["openssl", "enc", "-chacha20", "-iv", iv.hex(), "-nosalt", "-K", key.hex()]
+    print(f"running {cmd=}")
+    res=subprocess.run(cmd, capture_output=True, input=crypted)
+    data=res.stdout
+    #print(f'decrypted {data=}')
+    if packed:
+        data=lzma.decompress(data)
+    print(data)
+    sys.exit(1)
+
+
 
 
 
@@ -256,6 +289,7 @@ if __name__ == '__main__':
     save_debug(_sheet, "original")
     sheet = _sheet.copy()
     barcode = get_barcode(sheet)
+    decode_barcode(barcode.data)
     markers = get_markers(sheet)
 
 
